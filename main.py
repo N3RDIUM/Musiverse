@@ -1,6 +1,15 @@
 from curses import wrapper, cbreak, nocbreak
 from time import sleep, perf_counter
+from app import App
+from screens import Home
 
+# Create the app
+app = App()
+
+# Add screens
+app.add_screen('home', Home(app))
+
+# Main loop
 frame = 0
 def main(stdscr):
     global frame
@@ -14,10 +23,7 @@ def main(stdscr):
             
             tick = perf_counter()
             
-            h, w = stdscr.getmaxyx()
-            for i in range(h):
-                for j in range(w - 1):
-                    stdscr.addstr(i, j, str(frame)[-1])
+            app.render(stdscr, frame)
             frame += 1
 
             stdscr.refresh()
@@ -28,4 +34,6 @@ def main(stdscr):
         except KeyboardInterrupt:
             nocbreak()
 
-wrapper(main)
+# Driver code
+if __name__ == "__main__":
+    wrapper(main)
