@@ -29,12 +29,16 @@ class Home(Screen):
         y = h // 2 - _h // 2
         
         # Render the text
-        for i, line in enumerate(HOME_TEXT):
-            for j, char in enumerate(line):
-                render[y + i][x + j] = char
-                
-        _render = []
-        for row in render:
-            _render.append(''.join(row))
-        for x, row in enumerate(_render):
-            stdscr.addstr(x, 0, row)
+        try:
+            for i, line in enumerate(HOME_TEXT):
+                for j, char in enumerate(line):
+                    render[y + i][x + j] = char
+                    
+            _render = []
+            for row in render:
+                _render.append(''.join(row))
+            
+            for x, row in enumerate(_render):
+                stdscr.addstr(x, 0, row)
+        except:
+            print(f'Minimum window size: {_w}x{_h} chars!')
