@@ -1,9 +1,10 @@
-from curses import wrapper, cbreak, nocbreak
+from curses import wrapper, cbreak, nocbreak, start_color, curs_set
 from time import sleep, perf_counter
 from app import App
 from screens import Home
 from statusbar import StatusBar
 from keyboard_handler import KeyboardHandler
+from theme import theme
 
 # Create the app, statusbar and keyboard handler
 app = App()
@@ -17,6 +18,9 @@ app.add_screen('home', Home(app))
 frame = 0
 def main(stdscr):
     global frame
+    curs_set(False)
+    start_color()
+    theme()
     
     # Mainloop
     while True:
@@ -27,8 +31,10 @@ def main(stdscr):
             
             tick = perf_counter()
             
-            app.render(stdscr, frame)
-            statusbar.render(stdscr, frame)
+            try:
+                app.render(stdscr, frame)
+                statusbar.render(stdscr, frame)
+            except: print('Render failed!')
             frame += 1
 
             stdscr.refresh()

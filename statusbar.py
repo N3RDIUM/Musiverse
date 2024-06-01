@@ -1,5 +1,6 @@
 from app import App
-from curses import window
+from theme import DEFAULT
+from curses import window, color_pair
 
 FILLED = '━'
 EMPTY  = ' '
@@ -7,17 +8,22 @@ EMPTY  = ' '
 class StatusBar:
     def __init__(self, app: App):
         self.app = app
-        self.height = 3
+        self.height = 4
         app.props['statusbar'] = self
         
     def render(self, stdscr: window, frame: int):
         h, w = stdscr.getmaxyx()
         
         # Render progressbar
-        stdscr.addstr(h - 3, 0, f'﹝{FILLED * int(frame % (w - 4))}{EMPTY * ((w - 4) - int(frame % (w - 4)))}﹞')
+        stdscr.addstr(h - 4, 0, f'﹝{FILLED * int(frame % (w - 4))}{EMPTY * ((w - 4) - int(frame % (w - 4)))}﹞', color_pair(DEFAULT))
         
-        # TODO: Render player status
-        stdscr.addstr(h - 2, 0, f'Frame: {frame}')
+        # TODO: Render player status when you actually make a player
+        frm = f'Frame: {frame}'
+        stdscr.addstr(h - 3, 0, frm + ' ' * (w - len(frm)), color_pair(DEFAULT))
         
-        # Render active keybinds
-        stdscr.addstr(h - 1, 0, self.app.props['keybinds'])
+        # Empty row
+        stdscr.addstr(h - 2, 0, ' ' * w, color_pair(DEFAULT))
+        
+        # Render activekeybinds
+        kb = self.app.props['keybinds']
+        stdscr.addstr(h - 1, 0, ' ' * (w - len(kb)) + kb, color_pair(DEFAULT))

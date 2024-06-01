@@ -1,5 +1,6 @@
+from theme import DEFAULT
 from screen import Screen
-from curses import window
+from curses import window, color_pair
 
 HOME_TEXT = \
 """
@@ -18,7 +19,7 @@ class Home(Screen):
 
     def render(self, stdscr: window, frame: int):
         h, w = stdscr.getmaxyx()
-        h -= 1 + self.app.props['statusbar'].height
+        h -= self.app.props['statusbar'].height
         render = [[' '] * w for _ in range(h)]
         
         # Get width and height of HOME_TEXT
@@ -39,6 +40,6 @@ class Home(Screen):
                 _render.append(''.join(row))
             
             for x, row in enumerate(_render):
-                stdscr.addstr(x, 0, row)
+                stdscr.addstr(x, 0, row, color_pair(DEFAULT))
         except:
             print(f'Minimum window size: {_w}x{_h} chars!')
