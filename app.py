@@ -13,6 +13,7 @@ class App:
             self.current = name
 
     def navigate(self, name: str):
+        self.props['last_screen'] = self.current
         self.current = name
 
     def render(self, stdscr: window, frame: int):
