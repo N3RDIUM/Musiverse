@@ -3,13 +3,13 @@ from curses import window
 
 HOME_TEXT = \
 """
-┌─────────────────────────────────┐
+╭─────────────────────────────────╮
 │        M U S I V E R S E        │
 │ (Help me decide a better name!) │
 │                                 │
 │ H -> Home                       │   
 │ Q -> Quit                       │   
-└─────────────────────────────────┘
+╰─────────────────────────────────╯
 """.strip().splitlines()
 
 class Home(Screen):
