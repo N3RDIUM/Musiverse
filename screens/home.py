@@ -7,6 +7,12 @@ class Home(Screen):
 
     def render(self, stdscr: window, frame: int):
         h, w = stdscr.getmaxyx()
+        render = ""
+        
         for i in range(h):
-            for j in range(w - 1):
-                stdscr.addstr(i, j, 'a')
+            render += ' ' * (w - 1) + '\n'
+            
+        # Joe render code goes here
+        
+        for i, row in enumerate(render.splitlines()):
+            stdscr.addstr(i, 0, row)
