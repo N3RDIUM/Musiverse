@@ -1,3 +1,4 @@
+from sys import exit
 from app import App
 
 class KeyboardHandler:
@@ -5,5 +6,7 @@ class KeyboardHandler:
         self.app = app
         
     def handle(self, ch):
-        if ch == ord('h'):
+        if ch == 104:
             self.app.navigate('home')
+        if ch == 113:
+            exit(0)
