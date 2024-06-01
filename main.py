@@ -2,9 +2,11 @@ from curses import wrapper, cbreak, nocbreak
 from time import sleep, perf_counter
 from app import App
 from screens import Home
+from keyboard_handler import KeyboardHandler
 
-# Create the app
+# Create the app and keyboard handler
 app = App()
+handler = KeyboardHandler(app)
 
 # Add screens
 app.add_screen('home', Home(app))
@@ -28,6 +30,7 @@ def main(stdscr):
 
             stdscr.refresh()
             ch = stdscr.getch()
+            handler.handle(ch)
             
             tock = perf_counter()
             sleep(max(0, 1 / 69 - (tock - tick)))
