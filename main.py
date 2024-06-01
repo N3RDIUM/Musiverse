@@ -2,10 +2,12 @@ from curses import wrapper, cbreak, nocbreak
 from time import sleep, perf_counter
 from app import App
 from screens import Home
+from statusbar import StatusBar
 from keyboard_handler import KeyboardHandler
 
-# Create the app and keyboard handler
+# Create the app, statusbar and keyboard handler
 app = App()
+statusbar = StatusBar(app)
 handler = KeyboardHandler(app)
 
 # Add screens
@@ -26,6 +28,7 @@ def main(stdscr):
             tick = perf_counter()
             
             app.render(stdscr, frame)
+            statusbar.render(stdscr, frame)
             frame += 1
 
             stdscr.refresh()

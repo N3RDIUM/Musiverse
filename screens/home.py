@@ -18,7 +18,7 @@ class Home(Screen):
 
     def render(self, stdscr: window, frame: int):
         h, w = stdscr.getmaxyx()
-        h -= 1
+        h -= 1 + self.app.props['statusbar'].height
         render = [[' '] * w for _ in range(h)]
         
         # Get width and height of HOME_TEXT

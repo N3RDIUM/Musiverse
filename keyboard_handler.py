@@ -6,6 +6,9 @@ class KeyboardHandler:
         self.app = app
         
     def handle(self, ch):
+        if 'lock' in self.app.props:
+            self.app.screens[self.app.props['lock']].handle(ch)
+            return
         if ch == 104:
             self.app.navigate('home')
         if ch == 113:
