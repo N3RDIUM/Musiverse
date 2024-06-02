@@ -1,5 +1,5 @@
 {
     "theme": "nord",
     "theme_live_reload": true,
-    "max_frame_rate": 120
+    "max_frame_rate": 60
 }

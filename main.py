@@ -31,6 +31,7 @@ def main(stdscr):
             cbreak()
             stdscr.clear()
             stdscr.nodelay(True)
+            # TODO! Don't do it this way. Listen for changes instead.
             if config['theme_live_reload']:
                 reload_theme()
             

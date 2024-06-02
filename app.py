@@ -6,7 +6,7 @@ class App:
         self.current = None
         self.screens = {}
         self.props   = {
-            'keybinds': '[K]eybinds [H]ome [Q]uit'
+            'keybinds': '[H]ome [Q]uit'
         }
 
     def add_screen(self, name: str, screen: Screen):

@@ -15,11 +15,16 @@ class StatusBar:
     def render(self, stdscr: window, frame: int, frame_rate: float):
         h, w = stdscr.getmaxyx()
         
+        # ROW 1: Progress bar
+        # ROW 2: timestamps and media ctrl status and media info (scrolling song name)
+        # ROW 3: empty
+        # ROW 4: keybinds and status text
+        
         # Render progressbar
         stdscr.addstr(h - 4, 0, f'{DELIM[0]}{FILLED * int(frame % (w - 4))}{EMPTY * ((w - 4) - int(frame % (w - 4)))}{DELIM[1]}', color_pair(STATUSBAR))
         
         # TODO: Render player status when you actually make a player
-        frm = f'Frame: {frame} ({frame_rate:.2f} fps)        '
+        frm = f'Frame: {frame} ({frame_rate:.2f} fps)  /        '
         stdscr.addstr(h - 3, 0, frm + ' ' * (w - len(frm)), color_pair(STATUSBAR))
         
         # Empty rows
