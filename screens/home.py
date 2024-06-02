@@ -17,7 +17,7 @@ class Home(Screen):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def render(self, stdscr: window, frame: int):
+    def render(self, stdscr: window, frame: int, frame_rate: float):
         h, w = stdscr.getmaxyx()
         h -= self.app.props['statusbar'].height
         render = [[' '] * w for _ in range(h)]

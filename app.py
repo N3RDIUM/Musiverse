@@ -18,8 +18,8 @@ class App:
         self.props['last_screen'] = self.current
         self.current = name
 
-    def render(self, stdscr: window, frame: int):
+    def render(self, stdscr: window, frame: int, frame_rate: float):
         try:
-            return self.screens[self.current].render(stdscr, frame)
+            return self.screens[self.current]._render(stdscr, frame, frame_rate)
         except KeyError:
             raise KeyError(f'Unknown screen: {self.current}')

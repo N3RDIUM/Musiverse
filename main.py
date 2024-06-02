@@ -4,7 +4,8 @@ from app import App
 from screens import Home
 from statusbar import StatusBar
 from keyboard_handler import KeyboardHandler
-from theme import theme
+from theme import reload_theme
+from config import config
 
 # Create the app, statusbar and keyboard handler
 app = App()
@@ -16,24 +17,26 @@ app.add_screen('home', Home(app))
 
 # Main loop
 frame = 0
+frame_rate = 60
 def main(stdscr):
     global frame
     curs_set(False)
     start_color()
-    theme()
+    reload_theme()
     
     # Mainloop
     while True:
         try:
+            tick = perf_counter()
             cbreak()
             stdscr.clear()
             stdscr.nodelay(True)
-            
-            tick = perf_counter()
+            if config['theme_live_reload']:
+                reload_theme()
             
             try:
-                app.render(stdscr, frame)
-                statusbar.render(stdscr, frame)
+                app.render(stdscr, frame, frame_rate)
+                statusbar.render(stdscr, frame, frame_rate)
             except: print('Render failed!')
             frame += 1
 
@@ -42,7 +45,8 @@ def main(stdscr):
             handler.handle(ch)
             
             tock = perf_counter()
-            sleep(max(0, 1 / 69 - (tock - tick)))
+            sleep(max(0, 1 / config['max_frame_rate'] - (tock - tick)))
+            frame_rate = 1 / (perf_counter() - tick)
         except KeyboardInterrupt:
             nocbreak()
 
