@@ -1,5 +1,7 @@
 {
 
-    "foreground": "#ddddfb",
-    "background": "#2e3440"
+    "foreground": "#eeeeff",
+    "background": "#3b4252",
+    "statusbar_foreground": "#ddddea",
+    "statusbar_background": "#2e3440"
 }
