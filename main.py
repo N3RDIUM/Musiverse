@@ -2,6 +2,7 @@ from curses import wrapper, cbreak, nocbreak, start_color, curs_set
 from time import sleep, perf_counter
 from app import App
 from screens import Home
+from screens import Search
 from statusbar import StatusBar
 from keyboard_handler import KeyboardHandler
 from theme import reload_theme
@@ -14,13 +15,14 @@ handler = KeyboardHandler(app)
 
 # Add screens
 app.add_screen('home', Home(app))
+app.add_screen('search', Search(app))
 
 # Main loop
 frame = 0
 frame_rate = 60
 def main(stdscr):
     global frame
-    curs_set(False)
+    curs_set(0)
     start_color()
     reload_theme()
     
@@ -31,19 +33,19 @@ def main(stdscr):
             cbreak()
             stdscr.clear()
             stdscr.nodelay(True)
+            
             # TODO! Don't do it this way. Listen for changes instead.
             if config['theme_live_reload']:
                 reload_theme()
             
             try:
-                app.render(stdscr, frame, frame_rate)
                 statusbar.render(stdscr, frame, frame_rate)
-            except: print('Render failed!')
+                app.render(stdscr, frame, frame_rate)
+            except UnboundLocalError: pass
             frame += 1
 
             stdscr.refresh()
-            ch = stdscr.getch()
-            handler.handle(ch)
+            handler.handle(stdscr)
             
             tock = perf_counter()
             sleep(max(0, 1 / config['max_frame_rate'] - (tock - tick)))

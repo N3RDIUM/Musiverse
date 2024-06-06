@@ -2,16 +2,33 @@ from theme import DEFAULT
 from screen import Screen
 from curses import window, color_pair
 
-HOME_TEXT = \
-"""
-╭─────────────────────────────────╮
+HOME_TEXT = """╭─────────────────────────────────╮
+│                                 │
+│               ___               │
+│              /\__\              │
+│             /::|  |             │
+│            /:|:|  |             │
+│           /:/|:|__|__           │
+│          /:/ |::::\__\          │
+│          \/__/~~/:/  /          │
+│                /:/  /           │
+│               /:/  /            │
+│              /:/  /             │
+│              \/__/              │
+│                                 │
 │        M U S I V E R S E        │
 │ (Help me decide a better name!) │
 │                                 │
-│ H -> Home                       │   
-│ Q -> Quit                       │   
-╰─────────────────────────────────╯
-""".strip().splitlines()
+│        H ->        Home         │
+│        S ->       Search        │
+│        L ->      Library        │
+│        P ->     Playlists       │
+│        V ->     Visualizer      │
+│        E ->      Equalizer      │
+│        X ->      Settings       │
+│        Q ->        Quit         │
+│                                 │
+╰─────────────────────────────────╯""".strip().splitlines()
 
 class Home(Screen):
     def __init__(self, *args, **kwargs):
@@ -21,6 +38,7 @@ class Home(Screen):
         h, w = stdscr.getmaxyx()
         h -= self.app.props['statusbar'].height
         render = [[' '] * w for _ in range(h)]
+        self.app.props['keybinds'] = ''
         
         # Get width and height of HOME_TEXT
         _w, _h = len(HOME_TEXT[0]), len(HOME_TEXT)
@@ -43,3 +61,6 @@ class Home(Screen):
                 stdscr.addstr(x, 0, row, color_pair(DEFAULT))
         except:
             print(f'Minimum window size: {_w}x{_h} chars!')
+            
+    def handle_key(self, ch: int, stdscr: window):
+        return ch # No need for now

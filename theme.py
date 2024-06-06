@@ -5,12 +5,14 @@ from curses import init_color, init_pair
 # Color constants
 BACKGROUND   = 1
 FOREGROUND   = 2
-STATUSBARFG  = 4
 STATUSBARBG  = 3
+STATUSBARFG  = 4
+CURSORCOL    = 5
 
 # Pairs
 DEFAULT      = 1
 STATUSBAR    = 2
+CURSOR       = 3
 
 # Function to process color
 def process_color(color: str):
@@ -27,6 +29,9 @@ def reload_theme():
     init_color(FOREGROUND, *process_color(theme['foreground']))
     init_color(STATUSBARFG, *process_color(theme['statusbar_foreground']))
     init_color(STATUSBARBG, *process_color(theme['statusbar_background']))
+    init_color(CURSORCOL, *process_color(theme['cursor']))
 
     init_pair(DEFAULT, FOREGROUND, BACKGROUND)
     init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
+    init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
+    init_pair(CURSOR, CURSORCOL, BACKGROUND)

@@ -3,5 +3,6 @@
     "foreground": "#eeeeff",
     "background": "#3b4252",
     "statusbar_foreground": "#ddddea",
-    "statusbar_background": "#2e3440"
+    "statusbar_background": "#2e3440",
+    "cursor": "#d8dee9"
 }

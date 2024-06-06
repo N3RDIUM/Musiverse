@@ -6,7 +6,9 @@ class App:
         self.current = None
         self.screens = {}
         self.props   = {
-            'keybinds': '[H]ome [Q]uit'
+            'keybinds': '[Q]uit',
+            'keylock': False,
+            'status_text': ''
         }
 
     def add_screen(self, name: str, screen: Screen):
@@ -17,6 +19,7 @@ class App:
     def navigate(self, name: str):
         self.props['last_screen'] = self.current
         self.current = name
+        self.screens[self.current].on_navigate()
 
     def render(self, stdscr: window, frame: int, frame_rate: float):
         try:
