@@ -1,7 +1,7 @@
 from theme import DEFAULT, CURSOR
 from screen import Screen
-from curses import window, color_pair, KEY_BACKSPACE
-from curses.ascii import ESC
+from curses import window, color_pair, KEY_BACKSPACE, KEY_RIGHT, KEY_LEFT
+from curses.ascii import ESC, DEL
 
 _allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_ ."
 ALLOWED = set([ord(i) for i in _allowed])
@@ -11,6 +11,7 @@ class Search(Screen):
         super().__init__(*args, **kwargs)
         self.query = ""
         self.cursor_position = 0
+        self.view_position = 0
 
     def render(self, stdscr: window, frame: int, frame_rate: float):
         h, w = stdscr.getmaxyx()
@@ -19,11 +20,19 @@ class Search(Screen):
         
         # Render the thing
         try:
-            query = self.query
-            cursor_position = self.cursor_position
-            if(len(query) > w - 2):
-                query = query[len(query) - (w - 2):]
-                cursor_position = w - 3
+            query = self.query[self.view_position : self.view_position + w - 2]
+            cursor_position = self.cursor_position - self.view_position
+            
+            if cursor_position > len(query):
+                self.cursor_position = len(query) + self.view_position
+            if cursor_position < 1:
+                self.cursor_position = 0
+                
+            if cursor_position > w - 3:
+                self.view_position = len(self.query) - (w - 3)
+            if cursor_position == 1 and self.view_position > 0:
+                self.view_position -= 1
+            
             render[0] = "╭" + "─" * (w - 2) + "╮"
             render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
             render[2] = "╰" + "─" * (w - 2) + "╯"
@@ -38,17 +47,21 @@ class Search(Screen):
 
     def handle_key(self, ch: int, stdscr: window):
         if ch in ALLOWED:
-            self.query += chr(ch)
+            self.query = self.query[:self.cursor_position] + chr(ch) + self.query[self.cursor_position:]
             self.cursor_position += 1
         elif ch == ESC:
             self.query = ""
             self.app.props['keylock'] = False
             self.app.navigate(self.app.props['last_screen'])
             self.cursor_position = 0
-        elif ch == KEY_BACKSPACE:
+        elif ch == KEY_BACKSPACE: # TODO: DEL KEY
             if len(self.query) > 0:
                 self.cursor_position -= 1
-            self.query = self.query[:-1]
+            self.query = self.query[0 : self.cursor_position] + self.query[self.cursor_position + 1 :]
+        elif ch == KEY_RIGHT:
+            self.cursor_position += 1
+        elif ch == KEY_LEFT:
+            self.cursor_position -= 1
         return True
     
     def on_navigate(self):
