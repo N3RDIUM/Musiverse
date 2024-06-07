@@ -2,6 +2,9 @@ from theme import DEFAULT, CURSOR
 from screen import Screen
 from curses import window, color_pair, KEY_BACKSPACE, KEY_RIGHT, KEY_LEFT
 from curses.ascii import ESC, DEL
+from youtube_search import YoutubeSearch
+from threading import Thread
+from time import sleep
 
 _allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_ ."
 ALLOWED = set([ord(i) for i in _allowed])
@@ -10,8 +13,28 @@ class Search(Screen):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.query = ""
+        self.last_query = ""
+        self.results = []
         self.cursor_position = 0
         self.view_position = 0
+        
+        self.thread = Thread(target=self.search)
+        self.thread.daemon = True
+        self.thread.start()
+        
+    def search(self):
+        while True:
+            if self.query == "":
+                self.results = []
+                continue
+            if self.query == self.last_query:
+                continue
+            try:
+                self.results = YoutubeSearch(self.query, max_results=100).to_dict()
+                self.last_query = self.query
+            except:
+                pass
+            sleep(0.1)
 
     def render(self, stdscr: window, frame: int, frame_rate: float):
         h, w = stdscr.getmaxyx()
@@ -36,6 +59,15 @@ class Search(Screen):
             render[0] = "╭" + "─" * (w - 2) + "╮"
             render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
             render[2] = "╰" + "─" * (w - 2) + "╯"
+            
+            titles = []
+            for result in self.results:
+                titles.append(result['title'])
+                
+            for i, title in enumerate(titles):
+                if i + self.view_position >= h - self.app.props['statusbar'].height:
+                    break
+                render[i + 3] = "│" + title + " " * (w - 2 - len(title)) + "│"
             
             for x, row in enumerate(render):
                 stdscr.addstr(x, 0, ''.join(row), color_pair(DEFAULT))
