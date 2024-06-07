@@ -21,6 +21,7 @@ HOME_TEXT = """╭────────────────────�
 │                                 │
 │        H ->         Home        │
 │        S ->       Search        │
+│        L ->      Library        │
 │        P ->       Player        │
 │        Q ->         Quit        │
 │                                 │
@@ -60,3 +61,6 @@ class Home(Screen):
             
     def handle_key(self, ch: int, stdscr: window):
         return ch # No need for now
+    
+    def on_navigate(self):
+        pass

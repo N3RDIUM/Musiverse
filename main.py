@@ -1,8 +1,7 @@
 from curses import wrapper, cbreak, nocbreak, start_color, curs_set
 from time import sleep, perf_counter
 from app import App
-from screens import Home
-from screens import Search
+from screens import *
 from statusbar import StatusBar
 from keyboard_handler import KeyboardHandler
 from theme import reload_theme
@@ -16,6 +15,8 @@ handler = KeyboardHandler(app)
 # Add screens
 app.add_screen('home', Home(app))
 app.add_screen('search', Search(app))
+app.add_screen('library', Library(app))
+app.add_screen('player', Player(app))
 
 # Main loop
 frame = 0

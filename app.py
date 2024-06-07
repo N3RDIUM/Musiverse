@@ -22,7 +22,8 @@ class App:
     def navigate(self, name: str):
         self.props['last_screen'] = self.current
         self.current = name
-        self.screens[self.current].on_navigate()
+        try: self.screens[self.current].on_navigate()
+        except AttributeError: pass
 
     def render(self, stdscr: window, frame: int, frame_rate: float):
         try:

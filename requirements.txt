@@ -1,3 +1,4 @@
 youtube-search
+thefuzz
 pygame
 yt-dlp

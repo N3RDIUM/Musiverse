@@ -7,6 +7,7 @@
     "search_interval": 0.42,
     "download_dir": "./downloads",
     "index_dir": "./downloads/index/",
+    "data_dir": "./downloads/data/",
     "search_prefix": "",
     "search_suffix": ""
 }

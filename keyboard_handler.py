@@ -25,10 +25,14 @@ class KeyboardHandler:
         if self.app.props['keylock']:
             return
         
-        if ch == 104:
+        if ch == ord('h') or ch == ord('H'):
             self.app.navigate('home')
-        if ch == 115:
+        if ch == ord('s') or ch == ord('S'):
             self.app.navigate('search')
-        if ch == 113:
+        if ch == ord('l') or ch == ord('L'):
+            self.app.navigate('library')
+        if ch == ord('p') or ch == ord('P'):
+            self.app.navigate('player')
+        if ch == ord('q') or ch == ord('Q'):
             self.app.on_kill()
             exit(0)
