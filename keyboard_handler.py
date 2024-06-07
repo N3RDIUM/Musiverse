@@ -1,6 +1,6 @@
 from sys import exit
 from app import App
-from curses import window, set_escdelay
+from curses import window, set_escdelay, KEY_ENTER
 from curses.ascii import ESC
 
 class KeyboardHandler:
@@ -15,6 +15,8 @@ class KeyboardHandler:
             newch = stdscr.getch()
             if newch == -1:
                 ch = ESC
+        elif ch == KEY_ENTER or ch == 10 or ch == 13:
+            ch = KEY_ENTER
         
         try:
             self.app.screens[self.app.current].handle_key(ch, stdscr)
@@ -28,4 +30,5 @@ class KeyboardHandler:
         if ch == 115:
             self.app.navigate('search')
         if ch == 113:
+            self.app.on_kill()
             exit(0)

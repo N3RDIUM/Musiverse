@@ -6,6 +6,7 @@
     "cursor_blink_rate": 1,
     "search_interval": 0.42,
     "download_dir": "./downloads",
+    "index_dir": "./downloads/index/",
     "search_prefix": "",
     "search_suffix": ""
 }

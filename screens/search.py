@@ -1,6 +1,6 @@
-from theme import DEFAULT, CURSOR, SELECTED
+from theme import DEFAULT, CURSOR, SELECTED, DOWNLOADING, DOWNLOADED
 from screen import Screen
-from curses import window, color_pair, KEY_BACKSPACE, KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN
+from curses import window, color_pair, KEY_BACKSPACE, KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN, KEY_ENTER
 from curses.ascii import ESC, DEL
 from multiprocessing import Process, Manager
 from config import config
@@ -90,6 +90,10 @@ class Search(Screen):
                     break
                 rendered = result.render(w - 3)
                 pair = SELECTED if i == self.select else DEFAULT
+                if result.result in self.app.props['queue']:
+                    pair = DOWNLOADING
+                if self.app.storage.exists(result.result['id']):
+                    pair = DOWNLOADED
                 cursor = " " if i != self.select else ("" if time() % config['cursor_blink_rate'] < 0.5 else " ")
                 stdscr.addstr(i + 3, 1, cursor + " " + rendered +  " " * (w - 4 - len(rendered)), color_pair(pair))
             
@@ -129,9 +133,13 @@ class Search(Screen):
             self.select += 1
             if self.select >= len(self.namespace.results):
                 self.select = 0
+        elif ch == KEY_ENTER:
+            if not self.namespace.results[self.select].result['id'] in self.app.props['queue']:
+                self.app.props['status_text'] = self.app.props['status_text'] = f"Downloading: {self.namespace.results[self.select].result['title']}"
+                self.app.props['queue'].append(self.namespace.results[self.select].result)
         return True
     
     def on_navigate(self):
         self.app.props['keylock'] = True
-        self.app.props['keybinds'] = '[esc] Back'
+        self.app.props['keybinds'] = '[󱊷] Back [󰌑] Download'
         self.start_search()

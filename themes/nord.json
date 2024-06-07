@@ -5,5 +5,8 @@
     "select_background": "#4c566a",
     "statusbar_foreground": "#ddddea",
     "statusbar_background": "#2e3440",
-    "cursor": "#d8dee9"
+    "cursor": "#d8dee9",
+    "downloading_foreground": "#ebcb8b",
+    "downloaded_foreground": "#a3be8c",
+    "downloaded_background": "#434c5e"
 }

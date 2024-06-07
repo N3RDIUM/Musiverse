@@ -42,6 +42,7 @@ def main(stdscr):
                 statusbar.render(stdscr, frame, frame_rate)
                 app.render(stdscr, frame, frame_rate)
             except UnboundLocalError: pass
+            app.storage.update_namespace()
             frame += 1
 
             stdscr.refresh()
