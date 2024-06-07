@@ -9,6 +9,14 @@ from time import sleep
 _allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_ ."
 ALLOWED = set([ord(i) for i in _allowed])
 
+class Result:
+    def __init__(self, result):
+        self.result = result
+        
+    def render(self, max_length):
+        title = self.result['title']
+        return title[:max_length - 3] + '...' if len(title) > max_length else title
+
 class Search(Screen):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -18,23 +26,32 @@ class Search(Screen):
         self.cursor_position = 0
         self.view_position = 0
         
+    def start_search(self):
+        self.thread_terminated = False
         self.thread = Thread(target=self.search)
         self.thread.daemon = True
         self.thread.start()
+    
+    def terminate_search(self):
+        self.thread_terminated = True
+        self.thread.join()
         
     def search(self):
-        while True:
+        while not self.thread_terminated:
+            if not self.app.current == 'search':
+                continue
             if self.query == "":
                 self.results = []
                 continue
             if self.query == self.last_query:
                 continue
             try:
-                self.results = YoutubeSearch(self.query, max_results=100).to_dict()
+                results = YoutubeSearch(self.query, max_results=16).to_dict()
+                self.results = [Result(result) for result in results]
                 self.last_query = self.query
             except:
                 pass
-            sleep(0.1)
+            sleep(1)
 
     def render(self, stdscr: window, frame: int, frame_rate: float):
         h, w = stdscr.getmaxyx()
@@ -59,15 +76,12 @@ class Search(Screen):
             render[0] = "╭" + "─" * (w - 2) + "╮"
             render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
             render[2] = "╰" + "─" * (w - 2) + "╯"
-            
-            titles = []
-            for result in self.results:
-                titles.append(result['title'])
                 
-            for i, title in enumerate(titles):
+            for i, result in enumerate(self.results):
                 if i + self.view_position >= h - self.app.props['statusbar'].height:
                     break
-                render[i + 3] = "│" + title + " " * (w - 2 - len(title)) + "│"
+                rendered = result.render(w - 3)
+                render[i + 3] = " " + rendered
             
             for x, row in enumerate(render):
                 stdscr.addstr(x, 0, ''.join(row), color_pair(DEFAULT))
@@ -83,6 +97,7 @@ class Search(Screen):
             self.cursor_position += 1
         elif ch == ESC:
             self.query = ""
+            self.terminate_search()
             self.app.props['keylock'] = False
             self.app.navigate(self.app.props['last_screen'])
             self.cursor_position = 0
@@ -99,3 +114,4 @@ class Search(Screen):
     def on_navigate(self):
         self.app.props['keylock'] = True
         self.app.props['keybinds'] = '[esc] Back'
+        self.start_search()
