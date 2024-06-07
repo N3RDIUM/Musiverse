@@ -23,6 +23,7 @@ class Search(Screen):
         self.cursor_position = 0
         self.view_position = 0
         self.select = 0
+        self.pos = 0
         
     def start_search(self):
         self.manager = Manager()
@@ -84,10 +85,23 @@ class Search(Screen):
             
             for x, row in enumerate(render):
                 stdscr.addstr(x, 0, ''.join(row), color_pair(DEFAULT))
+            if self.select > h - self.app.props['statusbar'].height and self.pos < len(self.namespace.results):
+                self.select = h - self.app.props['statusbar'].height
+                self.pos += 1
+            if self.select < 1 and self.pos > 0:
+                self.select = 1
+                self.pos -= 1
                 
-            for i, result in enumerate(self.namespace.results):
-                if i + self.view_position >= h - self.app.props['statusbar'].height:
-                    break
+            if self.select + self.pos >= len(self.namespace.results):
+                self.select -= 1
+            if self.select + self.pos < 0:
+                self.select += 1
+            
+            results = self.namespace.results
+            for i, result in enumerate(results):
+                i -= self.pos
+                if i < 0 or i >= len(results): continue
+                if i > h - self.app.props['statusbar'].height: continue
                 rendered = result.render(w - 3)
                 pair = SELECTED if i == self.select else DEFAULT
                 if result.result in self.app.props['queue']:
@@ -96,7 +110,7 @@ class Search(Screen):
                     pair = DOWNLOADED
                 cursor = " " if i != self.select else ("" if time() % config['cursor_blink_rate'] < 0.5 else " ")
                 stdscr.addstr(i + 3, 1, cursor + " " + rendered +  " " * (w - 4 - len(rendered)), color_pair(pair))
-            
+                
             if len(self.namespace.results) == 0:
                 nothing = "Search something!"
                 icon = "󰍉"
@@ -127,12 +141,8 @@ class Search(Screen):
             self.cursor_position -= 1
         elif ch == KEY_UP:
             self.select -= 1
-            if self.select < 0:
-                self.select = len(self.namespace.results) - 1
         elif ch == KEY_DOWN:
             self.select += 1
-            if self.select >= len(self.namespace.results):
-                self.select = 0
         elif ch == KEY_ENTER:
             if not self.namespace.results[self.select].result['id'] in self.app.props['queue']:
                 self.app.props['status_text'] = self.app.props['status_text'] = f"Downloading: {self.namespace.results[self.select].result['title']}"
