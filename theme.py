@@ -8,11 +8,13 @@ FOREGROUND   = 2
 STATUSBARBG  = 3
 STATUSBARFG  = 4
 CURSORCOL    = 5
+SELECTBG     = 6
 
 # Pairs
 DEFAULT      = 1
 STATUSBAR    = 2
 CURSOR       = 3
+SELECTED     = 4
 
 # Function to process color
 def process_color(color: str):
@@ -30,8 +32,10 @@ def reload_theme():
     init_color(STATUSBARFG, *process_color(theme['statusbar_foreground']))
     init_color(STATUSBARBG, *process_color(theme['statusbar_background']))
     init_color(CURSORCOL, *process_color(theme['cursor']))
+    init_color(SELECTBG, *process_color(theme['select_background']))
 
     init_pair(DEFAULT, FOREGROUND, BACKGROUND)
     init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
     init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
     init_pair(CURSOR, CURSORCOL, BACKGROUND)
+    init_pair(SELECTED, FOREGROUND, SELECTBG)

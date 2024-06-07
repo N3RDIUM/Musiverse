@@ -1,10 +1,10 @@
-from theme import DEFAULT, CURSOR
+from theme import DEFAULT, CURSOR, SELECTED
 from screen import Screen
-from curses import window, color_pair, KEY_BACKSPACE, KEY_RIGHT, KEY_LEFT
+from curses import window, color_pair, KEY_BACKSPACE, KEY_RIGHT, KEY_LEFT, KEY_UP, KEY_DOWN
 from curses.ascii import ESC, DEL
-from youtube_search import YoutubeSearch
-from threading import Thread
-from time import sleep
+from multiprocessing import Process, Manager
+from config import config
+from time import time
 
 _allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_ ."
 ALLOWED = set([ord(i) for i in _allowed])
@@ -15,43 +15,46 @@ class Result:
         
     def render(self, max_length):
         title = self.result['title']
-        return title[:max_length - 3] + '...' if len(title) > max_length else title
+        return title[:max_length - 4] + '' if len(title) > max_length else title
 
 class Search(Screen):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.query = ""
-        self.last_query = ""
-        self.results = []
         self.cursor_position = 0
         self.view_position = 0
+        self.select = 0
         
     def start_search(self):
-        self.thread_terminated = False
-        self.thread = Thread(target=self.search)
-        self.thread.daemon = True
-        self.thread.start()
+        self.manager = Manager()
+        self.namespace = self.manager.Namespace()
+        self.namespace.query = ""
+        self.namespace.last_query = ""
+        self.namespace.results = []
+        self.process = Process(target=self.search, args=(self.namespace,))
+        self.process.start()
     
     def terminate_search(self):
-        self.thread_terminated = True
-        self.thread.join()
+        self.manager.shutdown()
+        self.process.terminate()
+        self.process.kill()
+        self.process.join()
         
-    def search(self):
-        while not self.thread_terminated:
-            if not self.app.current == 'search':
-                continue
-            if self.query == "":
-                self.results = []
-                continue
-            if self.query == self.last_query:
+    def search(self, namespace):
+        from youtube_search import YoutubeSearch
+        
+        while True:
+            query = namespace.query
+            if query == "":
+                namespace.results = []
+            if query == namespace.last_query:
                 continue
             try:
-                results = YoutubeSearch(self.query, max_results=16).to_dict()
-                self.results = [Result(result) for result in results]
-                self.last_query = self.query
-            except:
-                pass
-            sleep(1)
+                results = YoutubeSearch(namespace.query, max_results=config['max_search_results']).to_dict()
+                results = [Result(result) for result in results]
+                namespace.last_query = namespace.query
+                namespace.results = results
+            except Exception as e:
+                print(e)
 
     def render(self, stdscr: window, frame: int, frame_rate: float):
         h, w = stdscr.getmaxyx()
@@ -60,7 +63,7 @@ class Search(Screen):
         
         # Render the thing
         try:
-            query = self.query[self.view_position : self.view_position + w - 2]
+            query = self.namespace.query[self.view_position : self.view_position + w - 2]
             cursor_position = self.cursor_position - self.view_position
             
             if cursor_position > len(query):
@@ -76,39 +79,48 @@ class Search(Screen):
             render[0] = "╭" + "─" * (w - 2) + "╮"
             render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
             render[2] = "╰" + "─" * (w - 2) + "╯"
-                
-            for i, result in enumerate(self.results):
-                if i + self.view_position >= h - self.app.props['statusbar'].height:
-                    break
-                rendered = result.render(w - 3)
-                render[i + 3] = " " + rendered
             
             for x, row in enumerate(render):
                 stdscr.addstr(x, 0, ''.join(row), color_pair(DEFAULT))
                 
+            for i, result in enumerate(self.namespace.results):
+                if i + self.view_position >= h - self.app.props['statusbar'].height:
+                    break
+                rendered = result.render(w - 3)
+                pair = SELECTED if i == self.select else DEFAULT
+                cursor = " " if i != self.select else ("" if time() % config['cursor_blink_rate'] < 0.5 else " ")
+                stdscr.addstr(i + 3, 1, cursor + " " + rendered + " " * (w - 4 - len(rendered)), color_pair(pair))
+                
             # Cursor
-            stdscr.addstr(1, cursor_position + 1, '│', color_pair(CURSOR))
+            stdscr.addstr(1, cursor_position + 1, ("│" if (time() + 0.5) % config['cursor_blink_rate'] < 0.5 else " "), color_pair(CURSOR))
         except:
             print(f'Could not render!')
 
     def handle_key(self, ch: int, stdscr: window):
         if ch in ALLOWED:
-            self.query = self.query[:self.cursor_position] + chr(ch) + self.query[self.cursor_position:]
+            self.namespace.query = self.namespace.query[:self.cursor_position] + chr(ch) + self.namespace.query[self.cursor_position:]
             self.cursor_position += 1
         elif ch == ESC:
-            self.query = ""
             self.terminate_search()
             self.app.props['keylock'] = False
             self.app.navigate(self.app.props['last_screen'])
             self.cursor_position = 0
         elif ch == KEY_BACKSPACE: # TODO: DEL KEY
-            if len(self.query) > 0:
+            if len(self.namespace.query) > 0:
                 self.cursor_position -= 1
-            self.query = self.query[0 : self.cursor_position] + self.query[self.cursor_position + 1 :]
+            self.namespace.query = self.namespace.query[0 : self.cursor_position] + self.namespace.query[self.cursor_position + 1 :]
         elif ch == KEY_RIGHT:
             self.cursor_position += 1
         elif ch == KEY_LEFT:
             self.cursor_position -= 1
+        elif ch == KEY_UP:
+            self.select -= 1
+            if self.select < 0:
+                self.select = len(self.namespace.results) - 1
+        elif ch == KEY_DOWN:
+            self.select += 1
+            if self.select >= len(self.namespace.results):
+                self.select = 0
         return True
     
     def on_navigate(self):
