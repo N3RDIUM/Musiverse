@@ -5,5 +5,7 @@
     "max_search_results": 42,
     "cursor_blink_rate": 1,
     "search_interval": 0.42,
-    "download_dir": "./downloads"
+    "download_dir": "./downloads",
+    "search_prefix": "",
+    "search_suffix": ""
 }

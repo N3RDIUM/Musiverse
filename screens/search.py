@@ -44,12 +44,13 @@ class Search(Screen):
         
         while True:
             query = namespace.query
+            _query = config['search_prefix'] + query + config['search_suffix']
             if query == "":
                 namespace.results = []
             if query == namespace.last_query:
                 continue
             try:
-                results = YoutubeSearch(namespace.query, max_results=config['max_search_results']).to_dict()
+                results = YoutubeSearch(_query, max_results=config['max_search_results']).to_dict()
                 results = [Result(result) for result in results]
                 namespace.last_query = namespace.query
                 namespace.results = results
@@ -89,8 +90,8 @@ class Search(Screen):
                     break
                 rendered = result.render(w - 3)
                 pair = SELECTED if i == self.select else DEFAULT
-                cursor = " " if i != self.select else ("" if time() % config['cursor_blink_rate'] < 0.5 else " ")
-                stdscr.addstr(i + 3, 1, cursor + " " + rendered + " " * (w - 4 - len(rendered)), color_pair(pair))
+                cursor = " " if i != self.select else ("" if time() % config['cursor_blink_rate'] < 0.5 else " ")
+                stdscr.addstr(i + 3, 1, cursor + " " + rendered +  " " * (w - 4 - len(rendered)), color_pair(pair))
             
             if len(self.namespace.results) == 0:
                 nothing = "Search something!"
