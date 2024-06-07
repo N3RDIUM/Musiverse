@@ -1,2 +1,3 @@
 youtube-search
 pygame
+yt-dlp

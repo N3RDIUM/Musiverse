@@ -4,5 +4,6 @@
     "max_frame_rate": 64,
     "max_search_results": 42,
     "cursor_blink_rate": 1,
-    "search_interval": 0.42
+    "search_interval": 0.42,
+    "download_dir": "./downloads"
 }
