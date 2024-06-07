@@ -4,9 +4,9 @@ from curses import window, color_pair, KEY_BACKSPACE, KEY_RIGHT, KEY_LEFT, KEY_U
 from curses.ascii import ESC, DEL
 from multiprocessing import Process, Manager
 from config import config
-from time import time
+from time import time, sleep
 
-_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_ ."
+_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_.[](){}'\"<>?/\\|!@#$%^&*=+`~"
 ALLOWED = set([ord(i) for i in _allowed])
 
 class Result:
@@ -55,6 +55,7 @@ class Search(Screen):
                 namespace.results = results
             except Exception as e:
                 print(e)
+            sleep(config['search_interval'])
 
     def render(self, stdscr: window, frame: int, frame_rate: float):
         h, w = stdscr.getmaxyx()
@@ -90,6 +91,12 @@ class Search(Screen):
                 pair = SELECTED if i == self.select else DEFAULT
                 cursor = " " if i != self.select else ("" if time() % config['cursor_blink_rate'] < 0.5 else " ")
                 stdscr.addstr(i + 3, 1, cursor + " " + rendered + " " * (w - 4 - len(rendered)), color_pair(pair))
+            
+            if len(self.namespace.results) == 0:
+                nothing = "Search something!"
+                icon = "󰍉"
+                stdscr.addstr(3, 1, " " * (w - 1 - len(nothing)) + nothing, color_pair(DEFAULT))
+                stdscr.addstr(1, w - 3, icon, color_pair(DEFAULT))
                 
             # Cursor
             stdscr.addstr(1, cursor_position + 1, ("│" if (time() + 0.5) % config['cursor_blink_rate'] < 0.5 else " "), color_pair(CURSOR))

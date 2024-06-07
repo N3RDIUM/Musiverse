@@ -1,7 +1,8 @@
 {
     "theme": "nord",
     "theme_live_reload": true,
-    "max_frame_rate": 60,
+    "max_frame_rate": 64,
     "max_search_results": 42,
-    "cursor_blink_rate": 1
+    "cursor_blink_rate": 1,
+    "search_interval": 0.42
 }
