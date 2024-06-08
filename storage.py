@@ -27,16 +27,17 @@ class Storage:
         self.process.start()
 
     def downloader(self, namespace) -> None:
-        from os import makedirs
+        from os import makedirs, listdir
         from os.path import abspath, exists, join
         from shutil import move
+        from json import load
 
         import yt_dlp as youtube_dl
 
         makedirs(config["download_dir"], exist_ok=True)
         makedirs(join(config["download_dir"], "index/"), exist_ok=True)
 
-        def download_audio(id):
+        def download_audio(id) -> str:
             yt_url = f"https://www.youtube.com/watch?v={id}"
             ydl_opts = {
                 "format": "bestaudio/best",
@@ -59,6 +60,15 @@ class Storage:
             move(f"{id}.mp3", outfile)
             return outfile
 
+        def update_index_playlist() -> None:
+            indexes = listdir(config["index_dir"])
+            songs = []
+            for file in indexes:
+                with open(join(config["index_dir"], file)) as f:
+                    songs.append(load(f)["id"])
+            with open(join(config["data_dir"], "index.json"), "w") as f:
+                dump({"name": "All Songs", "songs": songs}, f)
+
         while True:
             try:
                 item = namespace.queue[0]
@@ -68,6 +78,7 @@ class Storage:
                     dump(item, f)
                 namespace.done.append(item)
                 namespace.queue.pop(0)
+                update_index_playlist()
             except IndexError:
                 pass
 
