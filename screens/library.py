@@ -6,9 +6,9 @@ from multiprocessing import Process, Manager
 from os import makedirs, listdir
 from os.path import join
 from config import config
-from thefuzz import fuzz
+from thefuzz import process
 from time import time, sleep
-from json import load
+from json import load, dump
 makedirs(config['data_dir'], exist_ok=True)
 
 
@@ -66,10 +66,15 @@ class Library(Screen):
             try:
                 results = listdir(config['data_dir'])
                 results = [Result(join(config['data_dir'], result)) for result in results]
-                results = sorted(results, key=lambda x: fuzz.ratio(x.result['name'], _query), reverse=True)
-                results = results[:config['max_search_results']]
+                choices = [result.result['name'] for result in results]
+                choice_map = [(result.result['name'], i) for i, result in enumerate(results)]
+                matches = process.extract(query, choices, limit=config['max_search_results'])
+                matches = [result[0] for result in matches]
+                final = []
+                for match in matches:
+                    final.append(results[choice_map[choices.index(match)][1]])
                 namespace.last_query = namespace.query
-                namespace.results = results
+                namespace.results = final
             except Exception as e: print(e)
             sleep(config['search_interval'])
 
