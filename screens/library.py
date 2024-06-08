@@ -11,38 +11,44 @@ from curses import (
 from curses.ascii import ESC  # , DEL
 from json import load
 from multiprocessing import Manager, Process
-from os import listdir, makedirs
-from os.path import join
+from os import listdir
+from os.path import abspath, join
 from time import sleep, time
-
-from thefuzz import process
 
 from config import config
 from do_nothing import do_nothing
 from screen import Screen
 from theme import CURSOR, DEFAULT, SELECTED
 
-makedirs(config["data_dir"], exist_ok=True)
-
-
-_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_.[](){}'\"<>?/\\|!@#$%^&*=+`~"
-ALLOWED = set([ord(i) for i in _allowed])
+_allowed = (
+    "abcdefghijklmnopqrstuvwxyz"
+    + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    + "0123456789"
+    + " -_.[](){}'\"<>"
+    + "?/\\|!@#$%^&*=+`~"
+)
+ALLOWED = {ord(i) for i in _allowed}
 
 
 class Result:
-    def __init__(self, jsonfile) -> None:
-        with open(jsonfile, "r") as f:
-            result = load(f)
-        self.result = result
+    def __init__(self, data) -> None:
+        # skipcq: PTC-W6004
+        with open(data, "r") as f:
+            self.data = load(f)
 
     def render(self, max_length) -> str:
-        title = self.result["name"]
-        return title[: max_length - 4] + "" if len(title) > max_length else title
+        name = self.data["name"]
+        return name[: max_length - 4] + "" if len(name) > max_length else name
 
 
 class Library(Screen):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        self.manager = None
+        self.namespace = None
+        self.process = None
+
         self.cursor_position = 0
         self.view_position = 0
         self.select = 0
@@ -52,7 +58,6 @@ class Library(Screen):
         self.manager = Manager()
         self.namespace = self.manager.Namespace()
         self.namespace.query = ""
-        self.namespace.last_query = ""
         self.namespace.results = []
         self.process = Process(target=self.search, args=(self.namespace,))
         self.process.start()
@@ -63,44 +68,31 @@ class Library(Screen):
         self.process.kill()
         self.process.join()
 
-    def search(self, namespace) -> None:
+    @staticmethod
+    def search(namespace) -> None:
+        from thefuzz import process
+
         while True:
             query = namespace.query
-            _query = query
-            if query == "":
-                try:
-                    results = listdir(config["data_dir"])
-                    results = [
-                        Result(join(config["data_dir"], result)) for result in results
-                    ]
-                    results = sorted(
-                        results, key=lambda x: x.result["name"], reverse=True
-                    )
-                    results = results[: config["max_search_results"]]
-                    namespace.last_query = namespace.query
-                    namespace.results = results
-                except Exception as e:
-                    print(e)
-            if query == namespace.last_query:
-                continue
             try:
                 results = listdir(config["data_dir"])
                 results = [
-                    Result(join(config["data_dir"], result)) for result in results
+                    abspath(join(config["data_dir"], result)) for result in results
                 ]
-                choices = [result.result["name"] for result in results]
-                choice_map = [
-                    (result.result["name"], i) for i, result in enumerate(results)
-                ]
-                matches = process.extract(
-                    query, choices, limit=config["max_search_results"]
+                results = [Result(result) for result in results]
+                results = sorted(
+                    results, key=lambda result: result.data["name"], reverse=True
                 )
-                matches = [result[0] for result in matches]
-                final = []
-                for match in matches:
-                    final.append(results[choice_map[choices.index(match)][1]])
-                namespace.last_query = namespace.query
-                namespace.results = final
+
+                if query != "":
+                    names = [result.data["name"] for result in results]
+                    names_map = {name: i for i, name in enumerate(names)}
+                    sort = process.extract(
+                        query, names, limit=config["max_search_results"]
+                    )
+                    results = [results[names_map[result[0]]] for result in sort]
+
+                namespace.results = results
             except Exception as e:
                 print(e)
             sleep(config["search_interval"])
@@ -118,13 +110,22 @@ class Library(Screen):
             ]
             cursor_position = self.cursor_position - self.view_position
 
+            if cursor_position > len(query):
+                self.cursor_position = len(query) + self.view_position
+            if cursor_position < 1:
+                self.cursor_position = 0
+
+            if cursor_position > w - 3:
+                self.view_position = len(self.query) - (w - 3)
+            if cursor_position == 1 and self.view_position > 0:
+                self.view_position -= 1
+
             render[0] = "╭" + "─" * (w - 2) + "╮"
             render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
             render[2] = "╰" + "─" * (w - 2) + "╯"
 
             for x, row in enumerate(render):
                 stdscr.addstr(x, 0, "".join(row), color_pair(DEFAULT))
-
             if self.select > h - self.app.props["statusbar"].height and self.pos < len(
                 self.namespace.results
             ):
@@ -160,9 +161,6 @@ class Library(Screen):
                     color_pair(pair),
                 )
 
-                if i == self.select:
-                    self.app.props["library_selected"] = result
-
             if len(self.namespace.results) == 0:
                 nothing = "Search something!"
                 icon = "󰍉"
@@ -179,9 +177,12 @@ class Library(Screen):
                 color_pair(CURSOR),
             )
         except Exception as e:
-            print(f"Could not render due to exception: {e}")
+            print(f"Could not render: {e}")
 
-    def handle_key(self, ch: int) -> None:
+    def handle_key(
+        self,
+        ch: int,
+    ) -> None:
         if ch in ALLOWED:
             self.namespace.query = (
                 self.namespace.query[: self.cursor_position]
@@ -207,14 +208,20 @@ class Library(Screen):
             self.cursor_position -= 1
         elif ch == KEY_UP:
             self.select -= 1
-            if self.select < 0:
-                self.select = 0
         elif ch == KEY_DOWN:
             self.select += 1
         elif ch == KEY_ENTER:
-            pass  # Create playlist if it doesn't exist
+            if (
+                self.namespace.results[self.select].data["id"]
+                not in self.app.props["queue"]
+            ):
+                self.app.props["status_text"] = self.app.props["status_text"] = (
+                    f"Downloading {self.namespace.results[self.select].data['title']}"
+                )
+                self.app.props["queue"].append(self.namespace.results[self.select].data)
+        return True
 
     def on_navigate(self) -> None:
         self.app.props["keylock"] = True
-        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Create"
+        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Download"
         self.start_search()

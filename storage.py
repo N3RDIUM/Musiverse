@@ -27,10 +27,11 @@ class Storage:
         self.process = Process(target=self.downloader, args=(self.namespace,))
         self.process.start()
 
-    def downloader(self, namespace) -> None:
+    @staticmethod
+    def downloader(namespace) -> None:
         from json import load
         from os import listdir, makedirs
-        from os.path import abspath, exists, join
+        from os.path import abspath
         from shutil import move
         from threading import Thread
 
