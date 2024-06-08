@@ -15,6 +15,7 @@ from os import listdir
 from os.path import abspath, join
 from time import sleep, time
 
+from song import Song
 from config import config
 from do_nothing import do_nothing
 from screen import Screen
@@ -28,10 +29,12 @@ _allowed = (
     + "?/\\|!@#$%^&*=+`~"
 )
 ALLOWED = {ord(i) for i in _allowed}
+LIBRARY_MODES = {"search": 0, "playlist": 1}
 
 
 class Result:
     def __init__(self, data) -> None:
+        self.filename = data
         # skipcq: PTC-W6004
         with open(data, "r") as f:
             self.data = load(f)
@@ -105,77 +108,154 @@ class Library(Screen):
 
         # Render the thing
         try:
-            query = self.namespace.query[
-                self.view_position : self.view_position + w - 2
-            ]
-            cursor_position = self.cursor_position - self.view_position
+            if self.app.props["library_status"] == LIBRARY_MODES["search"]:
+                query = self.namespace.query[
+                    self.view_position : self.view_position + w - 2
+                ]
+                cursor_position = self.cursor_position - self.view_position
 
-            if cursor_position > len(query):
-                self.cursor_position = len(query) + self.view_position
-            if cursor_position < 1:
-                self.cursor_position = 0
+                if cursor_position > len(query):
+                    self.cursor_position = len(query) + self.view_position
+                if cursor_position < 1:
+                    self.cursor_position = 0
 
-            if cursor_position > w - 3:
-                self.view_position = len(self.query) - (w - 3)
-            if cursor_position == 1 and self.view_position > 0:
-                self.view_position -= 1
+                if cursor_position > w - 3:
+                    self.view_position = len(self.query) - (w - 3)
+                if cursor_position == 1 and self.view_position > 0:
+                    self.view_position -= 1
 
-            render[0] = "╭" + "─" * (w - 2) + "╮"
-            render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
-            render[2] = "╰" + "─" * (w - 2) + "╯"
+                render[0] = "╭" + "─" * (w - 2) + "╮"
+                render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
+                render[2] = "╰" + "─" * (w - 2) + "╯"
 
-            for x, row in enumerate(render):
-                stdscr.addstr(x, 0, "".join(row), color_pair(DEFAULT))
-            if self.select > h - self.app.props["statusbar"].height and self.pos < len(
-                self.namespace.results
-            ):
-                self.select = h - self.app.props["statusbar"].height
-                self.pos += 1
-            if self.select < 1 and self.pos > 0:
-                self.select = 1
-                self.pos -= 1
+                for x, row in enumerate(render):
+                    stdscr.addstr(x, 0, "".join(row), color_pair(DEFAULT))
 
-            if self.select + self.pos >= len(self.namespace.results):
-                self.select -= 1
-            if self.select + self.pos < 0:
-                self.select += 1
+                if self.select > h - self.app.props[
+                    "statusbar"
+                ].height and self.pos < len(self.namespace.results):
+                    self.select = h - self.app.props["statusbar"].height
+                    self.pos += 1
+                if self.select < 1 and self.pos > 0:
+                    self.select = 1
+                    self.pos -= 1
 
-            results = self.namespace.results
-            for i, result in enumerate(results):
-                i -= self.pos
-                if i < 0 or i >= len(results):
-                    continue
-                if i > h - self.app.props["statusbar"].height:
-                    continue
-                rendered = result.render(w - 3)
-                pair = SELECTED if i == self.select else DEFAULT
-                cursor = (
-                    " "
-                    if i != self.select
-                    else ("" if time() % config["cursor_blink_rate"] < 0.5 else " ")
-                )
+                if self.select + self.pos >= len(self.namespace.results):
+                    self.select -= 1
+                if self.select + self.pos < 0:
+                    self.select += 1
+
+                results = self.namespace.results
+                for i, result in enumerate(results):
+                    i -= self.pos
+                    if i < 0 or i >= len(results):
+                        continue
+                    if i > h - self.app.props["statusbar"].height:
+                        continue
+                    rendered = result.render(w - 3)
+                    pair = SELECTED if i == self.select else DEFAULT
+                    cursor = (
+                        " "
+                        if i != self.select
+                        else (
+                            "" if time() % config["cursor_blink_rate"] < 0.5 else " "
+                        )
+                    )
+                    stdscr.addstr(
+                        i + 3,
+                        1,
+                        cursor + " " + rendered + " " * (w - 4 - len(rendered)),
+                        color_pair(pair),
+                    )
+
+                if len(self.namespace.results) == 0:
+                    nothing = "Search something!"
+                    icon = "󰍉"
+                    stdscr.addstr(
+                        3,
+                        1,
+                        " " * (w - 1 - len(nothing)) + nothing,
+                        color_pair(DEFAULT),
+                    )
+                    stdscr.addstr(1, w - 3, icon, color_pair(DEFAULT))
+
+                # Cursor
                 stdscr.addstr(
-                    i + 3,
                     1,
-                    cursor + " " + rendered + " " * (w - 4 - len(rendered)),
-                    color_pair(pair),
+                    cursor_position + 1,
+                    (
+                        "│"
+                        if (time() + 0.5) % config["cursor_blink_rate"] < 0.5
+                        else " "
+                    ),
+                    color_pair(CURSOR),
                 )
 
-            if len(self.namespace.results) == 0:
-                nothing = "Search something!"
-                icon = "󰍉"
-                stdscr.addstr(
-                    3, 1, " " * (w - 1 - len(nothing)) + nothing, color_pair(DEFAULT)
-                )
-                stdscr.addstr(1, w - 3, icon, color_pair(DEFAULT))
+            elif self.app.props["library_status"] == LIBRARY_MODES["playlist"]:
+                playlist = self.app.props["playlist"]
+                with open(playlist) as f:
+                    playlist = load(f)
 
-            # Cursor
-            stdscr.addstr(
-                1,
-                cursor_position + 1,
-                ("│" if (time() + 0.5) % config["cursor_blink_rate"] < 0.5 else " "),
-                color_pair(CURSOR),
-            )
+                # Render the playlist title
+                name = f"Playlist: {playlist['name']}"
+                render[0] = "╭" + "─" * (w - 2) + "╮"
+                render[1] = "│" + name + " " * (w - 2 - len(name)) + "│"
+                render[2] = "╰" + "─" * (w - 2) + "╯"
+
+                for x, row in enumerate(render):
+                    stdscr.addstr(x, 0, "".join(row), color_pair(DEFAULT))
+
+                # Render the playlist songs
+                songs = playlist["songs"]
+                songs = [Song(i) for i in songs]
+
+                if self.select > h - self.app.props[
+                    "statusbar"
+                ].height and self.pos < len(songs):
+                    self.select = h - self.app.props["statusbar"].height
+                    self.pos += 1
+                if self.select < 1 and self.pos > 0:
+                    self.select = 1
+                    self.pos -= 1
+
+                if self.select + self.pos >= len(songs):
+                    self.select -= 1
+                if self.select + self.pos < 0:
+                    self.select += 1
+
+                for i, song in enumerate(songs):
+                    i -= self.pos
+                    if i < 0 or i >= len(songs):
+                        continue
+                    if i > h - self.app.props["statusbar"].height:
+                        continue
+                    rendered = song.render(w - 3)
+                    pair = SELECTED if i == self.select else DEFAULT
+                    cursor = (
+                        " "
+                        if i != self.select
+                        else (
+                            "" if time() % config["cursor_blink_rate"] < 0.5 else " "
+                        )
+                    )
+                    stdscr.addstr(
+                        i + 3,
+                        1,
+                        cursor + " " + rendered + " " * (w - 4 - len(rendered)),
+                        color_pair(pair),
+                    )
+
+                if len(songs) == 0:
+                    nothing = "Add some songs!"
+                    icon = "󰍉"
+                    stdscr.addstr(
+                        3,
+                        1,
+                        " " * (w - 1 - len(nothing)) + nothing,
+                        color_pair(DEFAULT),
+                    )
+                    stdscr.addstr(1, w - 3, icon, color_pair(DEFAULT))
+
         except Exception as e:
             print(f"Could not render: {e}")
 
@@ -183,45 +263,61 @@ class Library(Screen):
         self,
         ch: int,
     ) -> None:
-        if ch in ALLOWED:
-            self.namespace.query = (
-                self.namespace.query[: self.cursor_position]
-                + chr(ch)
-                + self.namespace.query[self.cursor_position :]
-            )
-            self.cursor_position += 1
-        elif ch == ESC:
-            self.terminate_search()
-            self.app.props["keylock"] = False
-            self.app.navigate(self.app.props["last_screen"])
-            self.cursor_position = 0
-        elif ch == KEY_BACKSPACE:  # TODO: DEL KEY
-            if len(self.namespace.query) > 0:
-                self.cursor_position -= 1
-            self.namespace.query = (
-                self.namespace.query[0 : self.cursor_position]
-                + self.namespace.query[self.cursor_position + 1 :]
-            )
-        elif ch == KEY_RIGHT:
-            self.cursor_position += 1
-        elif ch == KEY_LEFT:
-            self.cursor_position -= 1
-        elif ch == KEY_UP:
-            self.select -= 1
-        elif ch == KEY_DOWN:
-            self.select += 1
-        elif ch == KEY_ENTER:
-            if (
-                self.namespace.results[self.select].data["id"]
-                not in self.app.props["queue"]
-            ):
-                self.app.props["status_text"] = self.app.props["status_text"] = (
-                    f"Downloading {self.namespace.results[self.select].data['title']}"
+        if self.app.props["library_status"] == LIBRARY_MODES["search"]:
+            if ch in ALLOWED:
+                self.namespace.query = (
+                    self.namespace.query[: self.cursor_position]
+                    + chr(ch)
+                    + self.namespace.query[self.cursor_position :]
                 )
-                self.app.props["queue"].append(self.namespace.results[self.select].data)
+                self.cursor_position += 1
+            elif ch == ESC:
+                self.terminate_search()
+                self.app.props["keylock"] = False
+                self.app.navigate(self.app.props["last_screen"])
+                self.cursor_position = 0
+            elif ch == KEY_BACKSPACE:  # TODO: DEL KEY
+                if len(self.namespace.query) > 0:
+                    self.cursor_position -= 1
+                self.namespace.query = (
+                    self.namespace.query[0 : self.cursor_position]
+                    + self.namespace.query[self.cursor_position + 1 :]
+                )
+            elif ch == KEY_RIGHT:
+                self.cursor_position += 1
+            elif ch == KEY_LEFT:
+                self.cursor_position -= 1
+            elif ch == KEY_UP:
+                self.select -= 1
+            elif ch == KEY_DOWN:
+                self.select += 1
+            elif ch == KEY_ENTER:
+                result = self.namespace.results[self.select + self.pos]
+                filename = result.filename
+                self.app.props["keylock"] = False
+                self.app.props["playlist"] = filename
+                self.app.props["library_status"] = LIBRARY_MODES["playlist"]
+                self.app.props["keybinds"] = "[󱊷] Back [space] Play"
+                self.select = 0
+                self.pos = 0
+
+        elif self.app.props["library_status"] == LIBRARY_MODES["playlist"]:
+            if ch == ESC:
+                self.app.props["keylock"] = True
+                self.app.props["keybinds"] = "[󱊷] Back [󰌑] Open"
+                self.app.props["library_status"] = LIBRARY_MODES["search"]
+                self.select = 0
+                self.pos = 0
+            elif ch == KEY_UP:
+                self.select -= 1
+            elif ch == KEY_DOWN:
+                self.select += 1
+            elif ch == KEY_ENTER:
+                pass
         return True
 
     def on_navigate(self) -> None:
         self.app.props["keylock"] = True
-        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Download"
+        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Open"
+        self.app.props["library_status"] = LIBRARY_MODES["search"]
         self.start_search()
