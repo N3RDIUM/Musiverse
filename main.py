@@ -1,4 +1,11 @@
-from curses import cbreak, curs_set, nocbreak, start_color, wrapper
+from curses import (
+    cbreak,
+    curs_set,
+    nocbreak,
+    start_color,
+    wrapper,
+    error as curses_error,
+)
 from time import perf_counter, sleep
 
 from app import App
@@ -48,6 +55,8 @@ def main(stdscr) -> None:
                 app.render(stdscr, frame, frame_rate)
             except UnboundLocalError:
                 pass
+            except curses_error:
+                print("Could not render!")
 
             app.storage.update_namespace()
             frame += 1

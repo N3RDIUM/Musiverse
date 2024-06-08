@@ -3,7 +3,7 @@ from curses import color_pair, window
 from screen import Screen
 from theme import DEFAULT
 
-HOME_TEXT = """╭─────────────────────────────────╮
+HOME_TEXT = r"""╭─────────────────────────────────╮
 │                                 │
 │               ___               │
 │              /\__\              │

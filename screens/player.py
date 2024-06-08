@@ -1,5 +1,6 @@
 from curses import color_pair, window
 
+from do_nothing import do_nothing
 from screen import Screen
 from theme import DEFAULT
 
@@ -13,6 +14,7 @@ class Player(Screen):
         h -= self.app.props["statusbar"].height
         render = [" " * w for _ in range(h)]
         self.app.props["keybinds"] = ""
+        do_nothing(frame, frame_rate)
 
         # Render the text
         try:

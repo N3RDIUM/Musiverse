@@ -8,8 +8,8 @@ class Screen:
     def _render(self, stdscr: window, frame: int, frame_rate: float) -> None:
         self.render(stdscr, frame, frame_rate)
 
-    def handle_key(self, ch: int) -> None:
-        raise NotImplementedError("This function/method is not implemented yet.")
+    def _handle_key(self, ch: int) -> None:
+        self.handle_key(ch)
 
-    def on_navigate(self) -> None:
-        raise NotImplementedError("This function/method is not implemented yet.")
+    def _on_navigate(self) -> None:
+        self.on_navigate()

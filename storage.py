@@ -22,22 +22,24 @@ class Storage:
         self.manager = Manager()
         self.namespace = self.manager.Namespace()
         self.namespace.queue = self.manager.list()
+        self.namespace.doing = self.manager.list()
         self.namespace.done = self.manager.list()
         self.process = Process(target=self.downloader, args=(self.namespace,))
         self.process.start()
 
     def downloader(self, namespace) -> None:
-        from os import makedirs, listdir
+        from json import load
+        from os import listdir, makedirs
         from os.path import abspath, exists, join
         from shutil import move
-        from json import load
-
-        import yt_dlp as youtube_dl
+        from threading import Thread
 
         makedirs(config["download_dir"], exist_ok=True)
         makedirs(join(config["download_dir"], "index/"), exist_ok=True)
 
         def download_audio(id) -> str:
+            import yt_dlp as youtube_dl
+
             yt_url = f"https://www.youtube.com/watch?v={id}"
             ydl_opts = {
                 "format": "bestaudio/best",
@@ -69,18 +71,32 @@ class Storage:
             with open(join(config["data_dir"], "index.json"), "w") as f:
                 dump({"name": "All Songs", "songs": songs}, f)
 
+        def do_it(item, namespace) -> None:
+            file = download_audio(item["id"])
+            item["file"] = abspath(file)
+            # skipcq: PTC-W6004
+            with open(join(config["index_dir"], f"{item['id']}.json"), "w") as f:
+                dump(item, f)
+            update_index_playlist()
+            namespace.done.append(item)
+
         while True:
             try:
-                item = namespace.queue[0]
-                file = download_audio(item["id"])
-                item["file"] = abspath(file)
-                with open(join(config["index_dir"], f"{item['id']}.json"), "w") as f:
-                    dump(item, f)
-                namespace.done.append(item)
-                namespace.queue.pop(0)
-                update_index_playlist()
-            except IndexError:
-                pass
+                for item in namespace.queue:
+                    if item in namespace.doing:
+                        continue
+                    if item in namespace.done:
+                        namespace.queue.remove(item)
+                        namespace.doing.remove(item)
+                        namespace.queue.pop(0)
+                        continue
+                    namespace.doing.append(item)
+                    thread = Thread(target=do_it, args=(item, namespace))
+                    thread.daemon = False
+                    thread.start()
+                    break
+            except Exception as e:
+                print(e)
 
     def kill(self) -> None:
         self.manager.shutdown()

@@ -13,26 +13,38 @@ from multiprocessing import Manager, Process
 from time import sleep, time
 
 from config import config
+from do_nothing import do_nothing
 from screen import Screen
 from storage import Storage
 from theme import CURSOR, DEFAULT, DOWNLOADED, DOWNLOADING, SELECTED
 
-_allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_.[](){}'\"<>?/\\|!@#$%^&*=+`~"
-ALLOWED = set([ord(i) for i in _allowed])
+_allowed = (
+    "abcdefghijklmnopqrstuvwxyz"
+    + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    + "0123456789"
+    + " -_.[](){}'\"<>"
+    + "?/\\|!@#$%^&*=+`~"
+)
+ALLOWED = {ord(i) for i in _allowed}
 
 
 class Result:
     def __init__(self, result) -> None:
-        self.result = result
+        self.data = result
 
     def render(self, max_length) -> str:
-        title = self.result["title"]
+        title = self.data["title"]
         return title[: max_length - 4] + "" if len(title) > max_length else title
 
 
 class Search(Screen):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+
+        self.manager = None
+        self.namespace = None
+        self.process = None
+
         self.cursor_position = 0
         self.view_position = 0
         self.select = 0
@@ -53,7 +65,8 @@ class Search(Screen):
         self.process.kill()
         self.process.join()
 
-    def search(self, namespace) -> None:
+    @staticmethod
+    def search(namespace) -> None:
         from youtube_search import YoutubeSearch
 
         while True:
@@ -78,6 +91,7 @@ class Search(Screen):
         h, w = stdscr.getmaxyx()
         h -= self.app.props["statusbar"].height
         render = [" " * w for _ in range(h)]
+        do_nothing(frame, frame_rate)
 
         # Render the thing
         try:
@@ -125,9 +139,9 @@ class Search(Screen):
                     continue
                 rendered = result.render(w - 3)
                 pair = SELECTED if i == self.select else DEFAULT
-                if result.result in self.app.props["queue"]:
+                if result.data in self.app.props["queue"]:
                     pair = DOWNLOADING
-                if Storage.exists(result.result["id"]):
+                if Storage.exists(result.data["id"]):
                     pair = DOWNLOADED
                 cursor = (
                     " "
@@ -192,15 +206,13 @@ class Search(Screen):
             self.select += 1
         elif ch == KEY_ENTER:
             if (
-                self.namespace.results[self.select].result["id"]
+                self.namespace.results[self.select].data["id"]
                 not in self.app.props["queue"]
             ):
                 self.app.props["status_text"] = self.app.props["status_text"] = (
-                    f"Downloading: {self.namespace.results[self.select].result['title']}"
+                    f"Downloading {self.namespace.results[self.select].data['title']}"
                 )
-                self.app.props["queue"].append(
-                    self.namespace.results[self.select].result
-                )
+                self.app.props["queue"].append(self.namespace.results[self.select].data)
         return True
 
     def on_navigate(self) -> None:

@@ -18,6 +18,7 @@ from time import sleep, time
 from thefuzz import process
 
 from config import config
+from do_nothing import do_nothing
 from screen import Screen
 from theme import CURSOR, DEFAULT, SELECTED
 
@@ -108,6 +109,7 @@ class Library(Screen):
         h, w = stdscr.getmaxyx()
         h -= self.app.props["statusbar"].height
         render = [" " * w for _ in range(h)]
+        do_nothing(frame, frame_rate)
 
         # Render the thing
         try:
