@@ -30,10 +30,10 @@ HOME_TEXT = """╭────────────────────�
 
 
 class Home(Screen):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-    def render(self, stdscr: window, frame: int, frame_rate: float):
+    def render(self, stdscr: window, frame: int, frame_rate: float) -> None:
         h, w = stdscr.getmaxyx()
         h -= self.app.props["statusbar"].height
         render = [[" "] * w for _ in range(h)]
@@ -61,8 +61,8 @@ class Home(Screen):
         except Exception as e:
             print(f"Could not render: {e}")
 
-    def handle_key(self, ch: int, stdscr: window):
+    def handle_key(self, ch: int, stdscr: window) -> None:
         return ch  # No need for now
 
-    def on_navigate(self):
+    def on_navigate(self) -> None:
         pass

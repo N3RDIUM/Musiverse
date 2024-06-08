@@ -1,16 +1,16 @@
 from curses import KEY_ENTER, set_escdelay, window
 from curses.ascii import ESC
-from sys import exit
+from sys import exit as sys_exit
 
 from app import App
 
 
 class KeyboardHandler:
-    def __init__(self, app: App):
+    def __init__(self, app: App) -> None:
         self.app = app
         set_escdelay(1)
 
-    def handle(self, stdscr: window):
+    def handle(self, stdscr: window) -> None:
         ch = stdscr.getch()
 
         if ch == 27:
@@ -38,4 +38,5 @@ class KeyboardHandler:
             self.app.navigate("player")
         if ch == ord("q") or ch == ord("Q"):
             self.app.on_kill()
-            exit(0)
+            # skipcq: PYL-R1722
+            sys_exit(0)

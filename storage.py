@@ -17,7 +17,7 @@ class loggerOutputs:  # Shush, yt-dlp!
 
 
 class Storage:
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         self.app = app
         self.manager = Manager()
         self.namespace = self.manager.Namespace()
@@ -26,7 +26,7 @@ class Storage:
         self.process = Process(target=self.downloader, args=(self.namespace,))
         self.process.start()
 
-    def downloader(self, namespace):
+    def downloader(self, namespace) -> None:
         from os import makedirs
         from os.path import abspath, exists, join
         from shutil import move
@@ -71,20 +71,20 @@ class Storage:
             except IndexError:
                 pass
 
-    def kill(self):
+    def kill(self) -> None:
         self.manager.shutdown()
         self.process.terminate()
         self.process.kill()
         self.process.join()
 
-    def update_namespace(self):
+    def update_namespace(self) -> None:
         self.namespace.queue = self.manager.list(self.app.props["queue"])
         for i in self.namespace.done:
             self.app.props["status_text"] = f"Downloaded complete: {i['title']}"
         self.namespace.done = self.manager.list()
         self.app.props["queue"] = list(self.namespace.queue)
 
-    def exists(self, id):
+    def exists(self, id: str) -> bool:
         if exists(join(config["index_dir"], f"{id}.json")):
             return True
         return False

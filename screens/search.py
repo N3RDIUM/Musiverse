@@ -21,23 +21,23 @@ ALLOWED = set([ord(i) for i in _allowed])
 
 
 class Result:
-    def __init__(self, result):
+    def __init__(self, result) -> None:
         self.result = result
 
-    def render(self, max_length):
+    def render(self, max_length) -> str:
         title = self.result["title"]
         return title[: max_length - 4] + "" if len(title) > max_length else title
 
 
 class Search(Screen):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.cursor_position = 0
         self.view_position = 0
         self.select = 0
         self.pos = 0
 
-    def start_search(self):
+    def start_search(self) -> None:
         self.manager = Manager()
         self.namespace = self.manager.Namespace()
         self.namespace.query = ""
@@ -46,13 +46,13 @@ class Search(Screen):
         self.process = Process(target=self.search, args=(self.namespace,))
         self.process.start()
 
-    def terminate_search(self):
+    def terminate_search(self) -> None:
         self.manager.shutdown()
         self.process.terminate()
         self.process.kill()
         self.process.join()
 
-    def search(self, namespace):
+    def search(self, namespace) -> None:
         from youtube_search import YoutubeSearch
 
         while True:
@@ -73,7 +73,7 @@ class Search(Screen):
                 print(e)
             sleep(config["search_interval"])
 
-    def render(self, stdscr: window, frame: int, frame_rate: float):
+    def render(self, stdscr: window, frame: int, frame_rate: float) -> None:
         h, w = stdscr.getmaxyx()
         h -= self.app.props["statusbar"].height
         render = [" " * w for _ in range(h)]
@@ -158,7 +158,7 @@ class Search(Screen):
         except Exception as e:
             print(f"Could not render: {e}")
 
-    def handle_key(self, ch: int, stdscr: window):
+    def handle_key(self, ch: int, stdscr: window) -> None:
         if ch in ALLOWED:
             self.namespace.query = (
                 self.namespace.query[: self.cursor_position]
@@ -199,7 +199,7 @@ class Search(Screen):
                 )
         return True
 
-    def on_navigate(self):
+    def on_navigate(self) -> None:
         self.app.props["keylock"] = True
         self.app.props["keybinds"] = "[󱊷] Back [󰌑] Download"
         self.start_search()

@@ -1,5 +1,6 @@
 import json
 from curses import init_color, init_pair
+from typing import Tuple
 
 from config import config
 
@@ -24,7 +25,7 @@ DOWNLOADED = 6
 
 
 # Function to process color
-def process_color(color: str):
+def process_color(color: str) -> Tuple[int, int, int]:
     color = int(color.strip("#"), 16)
     color = (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF
     return (
@@ -35,7 +36,7 @@ def process_color(color: str):
 
 
 # Function to reload the theme
-def reload_theme():
+def reload_theme() -> None:
     theme = config["theme"]
     theme = json.load(open(f"themes/{theme}.json"))
 

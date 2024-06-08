@@ -9,12 +9,12 @@ DELIM = "﹝﹞"
 
 
 class StatusBar:
-    def __init__(self, app: App):
+    def __init__(self, app: App) -> None:
         self.app = app
         self.height = 4
         app.props["statusbar"] = self
 
-    def render(self, stdscr: window, frame: int, frame_rate: float):
+    def render(self, stdscr: window, frame: int, frame_rate: float) -> None:
         h, w = stdscr.getmaxyx()
 
         # Render progressbar

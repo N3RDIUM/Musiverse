@@ -24,7 +24,7 @@ frame = 0
 frame_rate = 60
 
 
-def main(stdscr):
+def main(stdscr) -> None:
     global frame
     global frame_rate
     curs_set(0)
