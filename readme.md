@@ -1,6 +1,21 @@
-# TODO: Write a good readme ;-;
+# M U S I V E R S E
 
-The plan ahead:
-- Library:  All downloaded songs in one playlist
-- Library:  Can create new playlists and edit them
-- Player:   Focused UI with cover image display
+Musiverse is a curses-based modern, minimal, fully customizable and hackable terminal music player.
+
+## Capabilities
+
+- [x] Search for music on YouTube
+- [x] Download music from YouTube
+- [x] Parallely download multiple songs
+- [ ] Play music
+- [ ] Visualize music
+- [ ] Create and manage playlists
+- [ ] FULL Mpris integration
+
+## Roadmap
+
+- [x] Search and download util
+- [ ] Player
+- [ ] Mpris integration
+- [ ] Visualizer
+- [ ] Plugin support
