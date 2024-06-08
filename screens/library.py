@@ -95,7 +95,7 @@ class Library(Screen):
                 namespace.results = results
             except Exception as e:
                 print(e)
-            sleep(config["search_interval"])
+            sleep(config["library_search_interval"])
 
     def render(self, stdscr: window, frame: int, frame_rate: float) -> None:
         h, w = stdscr.getmaxyx()

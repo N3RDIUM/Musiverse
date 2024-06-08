@@ -36,7 +36,8 @@ class Storage:
         from threading import Thread
 
         makedirs(config["download_dir"], exist_ok=True)
-        makedirs(join(config["download_dir"], "index/"), exist_ok=True)
+        makedirs(config["index_dir"], exist_ok=True)
+        makedirs(config["data_dir"], exist_ok=True)
 
         def download_audio(id) -> str:
             import yt_dlp as youtube_dl

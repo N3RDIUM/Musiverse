@@ -16,6 +16,7 @@ from config import config
 from do_nothing import do_nothing
 from screen import Screen
 from storage import Storage
+from json import load
 from theme import CURSOR, DEFAULT, DOWNLOADED, DOWNLOADING, SELECTED
 
 _allowed = (
@@ -35,6 +36,17 @@ class Result:
     def render(self, max_length) -> str:
         title = self.data["title"]
         return title[: max_length - 4] + "" if len(title) > max_length else title
+
+
+class OfflineResult:
+    def __init__(self, data) -> None:
+        # skipcq: PTC-W6004
+        with open(data, "r") as f:
+            self.data = load(f)
+
+    def render(self, max_length) -> str:
+        name = self.data["title"]
+        return name[: max_length - 4] + "" if len(name) > max_length else name
 
 
 class Search(Screen):
@@ -68,12 +80,22 @@ class Search(Screen):
     @staticmethod
     def search(namespace) -> None:
         from youtube_search import YoutubeSearch
+        from os import listdir
+        from os.path import abspath, join
 
         while True:
             query = namespace.query
             _query = config["search_prefix"] + query + config["search_suffix"]
             if query == "":
-                namespace.results = []
+                results = listdir(config["index_dir"])
+                results = [
+                    abspath(join(config["index_dir"], result)) for result in results
+                ]
+                results = [OfflineResult(result) for result in results]
+                results = sorted(
+                    results, key=lambda result: result.data["title"], reverse=True
+                )
+                namespace.results = results
             if query == namespace.last_query:
                 continue
             try:
@@ -205,10 +227,9 @@ class Search(Screen):
         elif ch == KEY_DOWN:
             self.select += 1
         elif ch == KEY_ENTER:
-            if (
-                self.namespace.results[self.select].data["id"]
-                not in self.app.props["queue"]
-            ):
+            if self.namespace.results[self.select].data not in self.app.props[
+                "queue"
+            ] and not Storage.exists(self.namespace.results[self.select].data["id"]):
                 self.app.props["status_text"] = self.app.props["status_text"] = (
                     f"Downloading {self.namespace.results[self.select].data['title']}"
                 )
