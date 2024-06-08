@@ -14,6 +14,7 @@ from time import sleep, time
 
 from config import config
 from screen import Screen
+from storage import Storage
 from theme import CURSOR, DEFAULT, DOWNLOADED, DOWNLOADING, SELECTED
 
 _allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_.[](){}'\"<>?/\\|!@#$%^&*=+`~"
@@ -126,7 +127,7 @@ class Search(Screen):
                 pair = SELECTED if i == self.select else DEFAULT
                 if result.result in self.app.props["queue"]:
                     pair = DOWNLOADING
-                if self.app.storage.exists(result.result["id"]):
+                if Storage.exists(result.result["id"]):
                     pair = DOWNLOADED
                 cursor = (
                     " "
@@ -158,7 +159,10 @@ class Search(Screen):
         except Exception as e:
             print(f"Could not render: {e}")
 
-    def handle_key(self, ch: int, stdscr: window) -> None:
+    def handle_key(
+        self,
+        ch: int,
+    ) -> None:
         if ch in ALLOWED:
             self.namespace.query = (
                 self.namespace.query[: self.cursor_position]

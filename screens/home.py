@@ -61,7 +61,7 @@ class Home(Screen):
         except Exception as e:
             print(f"Could not render: {e}")
 
-    def handle_key(self, ch: int, stdscr: window) -> None:
+    def handle_key(self, ch: int) -> None:
         return ch  # No need for now
 
     def on_navigate(self) -> None:

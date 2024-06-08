@@ -95,7 +95,8 @@ class Storage:
         self.namespace.done = self.manager.list()
         self.app.props["queue"] = list(self.namespace.queue)
 
-    def exists(self, id: str) -> bool:
+    @staticmethod
+    def exists(id) -> bool:
         if exists(join(config["index_dir"], f"{id}.json")):
             return True
         return False

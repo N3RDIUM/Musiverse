@@ -179,7 +179,7 @@ class Library(Screen):
         except Exception as e:
             print(f"Could not render due to exception: {e}")
 
-    def handle_key(self, ch: int, stdscr: window) -> None:
+    def handle_key(self, ch: int) -> None:
         if ch in ALLOWED:
             self.namespace.query = (
                 self.namespace.query[: self.cursor_position]
@@ -211,7 +211,6 @@ class Library(Screen):
             self.select += 1
         elif ch == KEY_ENTER:
             pass  # Create playlist if it doesn't exist
-        return True
 
     def on_navigate(self) -> None:
         self.app.props["keylock"] = True

@@ -21,7 +21,7 @@ class KeyboardHandler:
             ch = KEY_ENTER
 
         try:
-            self.app.screens[self.app.current].handle_key(ch, stdscr)
+            self.app.screens[self.app.current].handle_key(ch)
         except AttributeError:
             pass
 
