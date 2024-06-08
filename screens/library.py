@@ -8,7 +8,7 @@ from curses import (
     color_pair,
     window,
 )
-from curses.ascii import ESC
+from curses.ascii import ESC  # , DEL
 from json import load
 from multiprocessing import Manager, Process
 from os import listdir, makedirs

@@ -8,7 +8,7 @@ from curses import (
     color_pair,
     window,
 )
-from curses.ascii import DEL, ESC
+from curses.ascii import ESC  # , DEL
 from multiprocessing import Manager, Process
 from time import sleep, time
 
@@ -155,8 +155,8 @@ class Search(Screen):
                 ("│" if (time() + 0.5) % config["cursor_blink_rate"] < 0.5 else " "),
                 color_pair(CURSOR),
             )
-        except:
-            print(f"Could not render!")
+        except Exception as e:
+            print(f"Could not render: {e}")
 
     def handle_key(self, ch: int, stdscr: window):
         if ch in ALLOWED:
@@ -188,8 +188,8 @@ class Search(Screen):
             self.select += 1
         elif ch == KEY_ENTER:
             if (
-                not self.namespace.results[self.select].result["id"]
-                in self.app.props["queue"]
+                self.namespace.results[self.select].result["id"]
+                not in self.app.props["queue"]
             ):
                 self.app.props["status_text"] = self.app.props["status_text"] = (
                     f"Downloading: {self.namespace.results[self.select].result['title']}"

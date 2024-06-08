@@ -1,4 +1,4 @@
-from curses import color_pair, curs_set, window
+from curses import color_pair, window
 
 from app import App
 from theme import STATUSBAR
