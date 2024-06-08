@@ -7,9 +7,9 @@ Musiverse is a curses-based modern, minimal, fully customizable and hackable ter
 - [x] Search for music on YouTube
 - [x] Download music from YouTube
 - [x] Parallely download multiple songs
+- [ ] Create and manage playlists
 - [ ] Play music
 - [ ] Visualize music
-- [ ] Create and manage playlists
 - [ ] FULL Mpris integration
 
 ## Roadmap
@@ -26,3 +26,4 @@ Musiverse is a curses-based modern, minimal, fully customizable and hackable ter
 - [ ] Add a playlist to another playlist
 - [ ] Create the player thing
 - [ ] Add mpris integration
+- [ ] Create a "queue" buffer for songs to be played. Instead of directly playing a playlist, you can "enqueue" it. The queue can be edited like a playlist. Create another mode in the library screen for this.
