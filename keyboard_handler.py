@@ -7,12 +7,28 @@ from app import App
 
 class KeyboardHandler:
     def __init__(self, app: App) -> None:
+        """
+        # Keyboard handler
+
+        Handles keyboard input for the app.
+
+        Arguments:
+        - app: The app instance
+        """
         self.app = app
         set_escdelay(1)
 
     def handle(self, stdscr: window) -> None:
+        """
+        ## Handle keypress
+
+        Arguments:
+        - stdscr: The curses window
+        """
+        # Get key press
         ch = stdscr.getch()
 
+        # Handle special keys
         if ch == 27:
             newch = stdscr.getch()
             if newch == -1:
@@ -20,14 +36,20 @@ class KeyboardHandler:
         elif ch == KEY_ENTER or ch == 10 or ch == 13:
             ch = KEY_ENTER
 
+        # Try to tell the current screen about the key
         try:
             self.app.screens[self.app.current].handle_key(ch)
         except AttributeError:
             pass
 
+        # YOU SHALL NOT PASS
+        # if the key lock is on
+        # i.e. a screen is taking text input.
         if self.app.props["keylock"]:
             return
 
+        # Handle keys
+        # TODO! Make this configurable
         if ch == ord("h") or ch == ord("H"):
             self.app.navigate("home")
         if ch == ord("s") or ch == ord("S"):

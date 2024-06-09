@@ -17,7 +17,7 @@ Musiverse is a curses-based modern, minimal, fully customizable and hackable ter
 - [x] Search and download util
 - [ ] Player
 - [ ] Mpris integration
-- [ ] Visualizer
+- [ ] Visualizer (w/ cover art display in visualizer and player screens)
 - [ ] Plugin support
 
 ## Short-term TODO

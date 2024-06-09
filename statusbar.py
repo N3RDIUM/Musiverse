@@ -10,18 +10,35 @@ DELIM = "﹝﹞"
 
 class StatusBar:
     def __init__(self, app: App) -> None:
+        """
+        # StatusBar
+
+        This class renders the statusbar at the bottom of the screen.
+
+        Arguments:
+        - app: The app instance
+        """
         self.app = app
         self.height = 4
         app.props["statusbar"] = self
 
     def render(self, stdscr: window, frame: int, frame_rate: float) -> None:
+        """
+        ## Render
+
+        Arguments:
+        - stdscr: The curses window
+        - frame: The current frame number [DEPRECATED]
+        - frame_rate: The current frame rate [DEPRECATED]
+        """
         h, w = stdscr.getmaxyx()
 
         # Render progressbar
         stdscr.addstr(
             h - 4,
             0,
-            f"{DELIM[0]}{FILLED * int(frame % (w - 4))}{EMPTY * ((w - 4) - int(frame % (w - 4)))}{DELIM[1]}",
+            f"{DELIM[0]}{FILLED * int(frame % (w - 4))}"
+            + f"{EMPTY * ((w - 4) - int(frame % (w - 4)))}{DELIM[1]}",
             color_pair(STATUSBAR),
         )
 

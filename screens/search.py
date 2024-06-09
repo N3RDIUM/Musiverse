@@ -31,6 +31,11 @@ ALLOWED = {ord(i) for i in _allowed}
 
 class Result:
     def __init__(self, result) -> None:
+        """
+        # Result
+
+        This class holds data about a song fetched from YouTube.
+        """
         self.data = result
 
     def render(self, max_length) -> str:
@@ -40,8 +45,16 @@ class Result:
 
 class OfflineResult:
     def __init__(self, data) -> None:
+        """
+        # Offline Result
+
+        This class holds data about a song which is already downloaded.
+        It auto-loads the data from a json file.
+        """
+        self.filename = data
         # skipcq: PTC-W6004
         with open(data, "r") as f:
+            # skipcq: PTC-W6004
             self.data = load(f)
 
     def render(self, max_length) -> str:
@@ -51,18 +64,32 @@ class OfflineResult:
 
 class Search(Screen):
     def __init__(self, *args, **kwargs) -> None:
+        """
+        # The Musiverse Search screen
+
+        This screen allows you to search and download music from YouTube.
+        """
         super().__init__(*args, **kwargs)
 
+        # Init empty vars for the search process
         self.manager = None
         self.namespace = None
         self.process = None
 
+        # Variables for the cursor position
         self.cursor_position = 0
         self.view_position = 0
-        self.select = 0
-        self.pos = 0
+
+        # Variables for the selector position
+        self.selected = 0
+        self.vertical_position = 0
 
     def start_search(self) -> None:
+        """
+        ## Start the search process
+
+        This starts a new process that searches for playlists.
+        """
         self.manager = Manager()
         self.namespace = self.manager.Namespace()
         self.namespace.query = ""
@@ -72,6 +99,12 @@ class Search(Screen):
         self.process.start()
 
     def terminate_search(self) -> None:
+        """
+        ## Terminate the search process
+
+        This terminates the search process
+        when it is no longer needed.
+        """
         self.manager.shutdown()
         self.process.terminate()
         self.process.kill()
@@ -79,13 +112,22 @@ class Search(Screen):
 
     @staticmethod
     def search(namespace) -> None:
+        """
+        ## Search process
+
+        This is the main search function.
+        It uses the YouTube API to search for playlists.
+        """
         from youtube_search import YoutubeSearch
         from os import listdir
         from os.path import abspath, join
 
         while True:
+            # Get the query and add the search prefix and suffix
             query = namespace.query
             _query = config["search_prefix"] + query + config["search_suffix"]
+
+            # If there is no query, load all song names and sort alphabetically
             if query == "":
                 results = listdir(config["index_dir"])
                 results = [
@@ -96,8 +138,13 @@ class Search(Screen):
                     results, key=lambda result: result.data["title"], reverse=True
                 )
                 namespace.results = results
+                continue
+
+            # If the query is the same as the last query, skip
             if query == namespace.last_query:
                 continue
+
+            # If there is a query, use the YouTube API
             try:
                 results = YoutubeSearch(
                     _query, max_results=config["max_search_results"]
@@ -107,9 +154,23 @@ class Search(Screen):
                 namespace.results = results
             except Exception as e:
                 print(e)
+
+            # Wait for the configured search interval
             sleep(config["search_interval"])
 
     def render(self, stdscr: window, frame: int, frame_rate: float) -> None:
+        """
+        ## Render the screen
+
+        This renders the screen.
+        It might get a bit complicated,
+        but trust me, its pretty simple.
+
+        Arguments:
+        - stdscr: The curses window
+        - frame: The current frame number [DEPRECATED]
+        - frame_rate: The current frame rate [DEPRECATED]
+        """
         h, w = stdscr.getmaxyx()
         h -= self.app.props["statusbar"].height
         render = [" " * w for _ in range(h)]
@@ -117,9 +178,12 @@ class Search(Screen):
 
         # Render the thing
         try:
+            # Get the slice of the query that will be rendered
             query = self.namespace.query[
                 self.view_position : self.view_position + w - 2
             ]
+
+            # Modify the cursor position
             cursor_position = self.cursor_position - self.view_position
 
             if cursor_position > len(query):
@@ -132,42 +196,49 @@ class Search(Screen):
             if cursor_position == 1 and self.view_position > 0:
                 self.view_position -= 1
 
+            if self.selected > h - self.app.props[
+                "statusbar"
+            ].height and self.vertical_position < len(self.namespace.results):
+                self.selected = h - self.app.props["statusbar"].height
+                self.vertical_position += 1
+            if self.selected < 1 and self.vertical_position > 0:
+                self.selected = 1
+                self.vertical_position -= 1
+
+            if self.selected + self.vertical_position >= len(self.namespace.results):
+                self.selected -= 1
+            if self.selected + self.vertical_position < 0:
+                self.selected += 1
+
+            # Add a nicely boxed query to the render
             render[0] = "╭" + "─" * (w - 2) + "╮"
             render[1] = "│" + query + " " * (w - 2 - len(query)) + "│"
             render[2] = "╰" + "─" * (w - 2) + "╯"
 
+            # Render the thing
             for x, row in enumerate(render):
                 stdscr.addstr(x, 0, "".join(row), color_pair(DEFAULT))
-            if self.select > h - self.app.props["statusbar"].height and self.pos < len(
-                self.namespace.results
-            ):
-                self.select = h - self.app.props["statusbar"].height
-                self.pos += 1
-            if self.select < 1 and self.pos > 0:
-                self.select = 1
-                self.pos -= 1
 
-            if self.select + self.pos >= len(self.namespace.results):
-                self.select -= 1
-            if self.select + self.pos < 0:
-                self.select += 1
-
+            # Render the search results
             results = self.namespace.results
             for i, result in enumerate(results):
-                i -= self.pos
+                # Index logic
+                i -= self.vertical_position
                 if i < 0 or i >= len(results):
                     continue
                 if i > h - self.app.props["statusbar"].height:
                     continue
+
+                # Render the result and add its string to the stdscr
                 rendered = result.render(w - 3)
-                pair = SELECTED if i == self.select else DEFAULT
+                pair = SELECTED if i == self.selected else DEFAULT
                 if result.data in self.app.props["queue"]:
                     pair = DOWNLOADING
                 if Storage.exists(result.data["id"]):
                     pair = DOWNLOADED
                 cursor = (
                     " "
-                    if i != self.select
+                    if i != self.selected
                     else ("" if time() % config["cursor_blink_rate"] < 0.5 else " ")
                 )
                 stdscr.addstr(
@@ -177,15 +248,16 @@ class Search(Screen):
                     color_pair(pair),
                 )
 
+            # Nothing was found
             if len(self.namespace.results) == 0:
-                nothing = "Search something!"
+                nothing = "No results :("
                 icon = "󰍉"
                 stdscr.addstr(
                     3, 1, " " * (w - 1 - len(nothing)) + nothing, color_pair(DEFAULT)
                 )
                 stdscr.addstr(1, w - 3, icon, color_pair(DEFAULT))
 
-            # Cursor
+            # Render the cursor
             stdscr.addstr(
                 1,
                 cursor_position + 1,
@@ -199,6 +271,15 @@ class Search(Screen):
         self,
         ch: int,
     ) -> None:
+        """
+        ## Handle a key press
+
+        Called by keyboard_handler.KeyboardHandler
+
+        Arguments:
+        - ch: The key pressed
+        """
+        # Typing
         if ch in ALLOWED:
             self.namespace.query = (
                 self.namespace.query[: self.cursor_position]
@@ -206,11 +287,6 @@ class Search(Screen):
                 + self.namespace.query[self.cursor_position :]
             )
             self.cursor_position += 1
-        elif ch == ESC:
-            self.terminate_search()
-            self.app.props["keylock"] = False
-            self.app.navigate(self.app.props["last_screen"])
-            self.cursor_position = 0
         elif ch == KEY_BACKSPACE:  # TODO: DEL KEY
             if len(self.namespace.query) > 0:
                 self.cursor_position -= 1
@@ -218,25 +294,42 @@ class Search(Screen):
                 self.namespace.query[0 : self.cursor_position]
                 + self.namespace.query[self.cursor_position + 1 :]
             )
+
+        # Return to previous screen on esc
+        elif ch == ESC:
+            self.terminate_search()
+            self.app.props["keylock"] = False
+            self.app.navigate(self.app.props["last_screen"])
+            self.cursor_position = 0
+
+        # Cursor movement logic
         elif ch == KEY_RIGHT:
             self.cursor_position += 1
         elif ch == KEY_LEFT:
             self.cursor_position -= 1
         elif ch == KEY_UP:
-            self.select -= 1
+            self.selected -= 1
         elif ch == KEY_DOWN:
-            self.select += 1
+            self.selected += 1
+
+        # Enter to download the selected item
         elif ch == KEY_ENTER:
-            if self.namespace.results[self.select].data not in self.app.props[
+            if self.namespace.results[self.selected].data not in self.app.props[
                 "queue"
-            ] and not Storage.exists(self.namespace.results[self.select].data["id"]):
+            ] and not Storage.exists(self.namespace.results[self.selected].data["id"]):
                 self.app.props["status_text"] = self.app.props["status_text"] = (
-                    f"Downloading {self.namespace.results[self.select].data['title']}"
+                    f"Downloading {self.namespace.results[self.selected].data['title']}"
                 )
-                self.app.props["queue"].append(self.namespace.results[self.select].data)
-        return True
+                self.app.props["queue"].append(
+                    self.namespace.results[self.selected].data
+                )
 
     def on_navigate(self) -> None:
+        """
+        ## On navigate
+
+        Called by app.App when the user navigates to this screen
+        """
         self.app.props["keylock"] = True
         self.app.props["keybinds"] = "[󱊷] Back [󰌑] Download"
         self.start_search()

@@ -37,6 +37,11 @@ def process_color(color: str) -> Tuple[int, int, int]:
 
 # Function to reload the theme
 def reload_theme() -> None:
+    """
+    ## Reload the theme
+
+    This reloads the theme. Should be pretty self-explanatory.
+    """
     theme = config["theme"]
     theme = json.load(open(f"themes/{theme}.json"))
 
