@@ -31,7 +31,7 @@ class App:
                     "shuffle": False,
                 },
                 "song": None,
-                "progress": 42,
+                "progress": 0,
             },
         }
         self.storage = Storage(self)

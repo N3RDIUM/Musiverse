@@ -1,4 +1,4 @@
-from curses import color_pair, window
+from curses import color_pair, window, KEY_LEFT, KEY_RIGHT
 
 import pygame
 
@@ -10,7 +10,7 @@ from threading import Thread
 from config import config
 
 # Unique enough ;)
-SONG_END = 69420
+SONG_END = 69
 
 
 class Player(Screen):
@@ -32,6 +32,7 @@ class Player(Screen):
             },
             "song": None,
         }
+        self.offset = 0
         self.progress_thread = Thread(target=self.update_progress)
         self.player_thread = Thread(target=self.update_player)
         self.progress_thread.start()
@@ -46,7 +47,7 @@ class Player(Screen):
         while True:
             try:
                 length = self.sound.get_length()
-                progress = pygame.mixer.music.get_pos() / 1000
+                progress = (pygame.mixer.music.get_pos() - self.offset) / 1000
                 self.app.props["playing"]["progress"] = int(progress / length * 100)
             except Exception:
                 pass
@@ -54,32 +55,42 @@ class Player(Screen):
 
     def update_player(self) -> None:
         while True:
-            if self.player_status["song"] != self.app.props["playing"]["song"]:
-                self.player_status["song"] = self.app.props["playing"]["song"]
-                try:
-                    filename = self.player_status["song"]["file"]
-                    title = self.player_status["song"]["title"]
-                    self.app.props["status_text"] = f"Now Playing: {title}"
-
-                    pygame.mixer.music.load(filename)
-                    pygame.mixer.music.set_endevent(SONG_END)
-                    pygame.mixer.music.play(loops=0, start=0)
-                    pygame.mixer.music.set_volume(1)
-
-                    self.sound = pygame.mixer.Sound(filename)
-                except Exception as e:
-                    self.app.props["status_text"] = f"Could not play: {e}"
-
-            if pygame.mixer.music.get_endevent() == SONG_END:
-                if (
-                    self.app.props["playing"]["loop"]
-                    and self.app.props["playing"]["loop_type"] == "single"
+            try:
+                if str(self.player_status["song"]) != str(
+                    self.app.props["playing"]["song"]
                 ):
-                    pygame.mixer.music.play(loops=0, start=0)
-                else:
-                    self.app.props["playing"]["status"]["playing"] = False
+                    self.player_status["song"] = self.app.props["playing"]["song"]
+                    try:
+                        filename = self.player_status["song"]["file"]
+                        title = self.player_status["song"]["title"]
+                        self.app.props["status_text"] = f"Now Playing: {title}"
 
-            sleep(config["progress_update_interval"])
+                        if pygame.mixer.music.get_busy():
+                            pygame.mixer.music.stop()
+                        pygame.mixer.music.unload()
+
+                        pygame.mixer.music.load(filename)
+                        pygame.mixer.music.set_endevent(SONG_END)
+                        pygame.mixer.music.play(loops=0, start=0)
+                        pygame.mixer.music.set_volume(1)
+
+                        self.sound = pygame.mixer.Sound(filename)
+                    except Exception as e:
+                        self.app.props["status_text"] = f"Could not play: {e}"
+
+                if (
+                    pygame.mixer.music.get_endevent() == SONG_END
+                    and not pygame.mixer.music.get_busy()
+                ):
+                    pygame.mixer.music.set_endevent(0)
+                    self.app.props["status_text"] = (
+                        "Song has ended. TODO: What to play next?"
+                    )
+            except Exception as e:
+                self.app.props["status_text"] = f"Could not play: {e}"
+
+            finally:
+                sleep(config["progress_update_interval"])
 
     def render(self, stdscr: window, frame: int, frame_rate: float) -> None:
         """
@@ -115,6 +126,60 @@ class Player(Screen):
         - ch: The key pressed
         """
         return ch  # No need for now
+
+    def handle_key_bg(self, ch: int) -> None:
+        """
+        ## Handle a key press when the screen is not active
+
+        Called by keyboard_handler.KeyboardHandler
+
+        Arguments:
+        - ch: The key pressed
+        """
+        if ch == ord("z"):
+            try:
+                self.offset = pygame.mixer.music.get_pos()
+                pygame.mixer.music.rewind()
+            except pygame.error:
+                self.app.props["status_text"] = "No song playing!"
+                self.no_song()
+        elif ch == ord("m"):
+            try:
+                self.offset = 0
+                pygame.mixer.music.set_pos(self.sound.get_length() * 1000 - 1)
+            except pygame.error:
+                self.app.props["status_text"] = "No song playing!"
+                self.no_song()
+
+        if ch == KEY_LEFT:  # TODO! Add interval to config.json
+            try:
+                pygame.mixer.music.rewind()
+                current = pygame.mixer.music.get_pos() - self.offset
+                pygame.mixer.music.set_pos(current / 1000)
+                self.offset += 1000
+            except pygame.error:
+                self.app.props["status_text"] = "No song playing!"
+                self.no_song()
+        elif ch == KEY_RIGHT:
+            try:
+                pygame.mixer.music.rewind()
+                current = pygame.mixer.music.get_pos() - self.offset
+                pygame.mixer.music.set_pos(current / 1000)
+                self.offset -= 1000
+            except pygame.error:
+                self.app.props["status_text"] = "No song playing!"
+                self.no_song()
+
+    def no_song(self) -> None:
+        """
+        ## No song playing
+
+        Called when no song is playing
+        """
+        self.app.props["playing"]["status"]["playing"] = False
+        self.app.props["playing"]["song"] = None
+        self.app.props["playing"]["progress"] = 0
+        self.offset = 0
 
     def on_navigate(self) -> None:
         """

@@ -48,6 +48,15 @@ class KeyboardHandler:
         if self.app.props["keylock"]:
             return
 
+        # Try to tell the other screens about the key too
+        for screen in self.app.screens:
+            if screen == self.app.current:
+                continue
+            try:
+                self.app.screens[screen].handle_key_bg(ch)
+            except AttributeError:
+                pass
+
         # Handle keys
         # TODO! Make this configurable
         if ch == ord("h") or ch == ord("H"):

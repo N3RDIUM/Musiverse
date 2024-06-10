@@ -17,7 +17,7 @@ from do_nothing import do_nothing
 from screen import Screen
 from storage import Storage
 from json import load
-from theme import CURSOR, DEFAULT, DOWNLOADED, DOWNLOADING, SELECT, SELECTED
+from theme import CURSOR, DEFAULT, DOWNLOADED, DOWNLOADING, SELECT, SELECTED, PLAYING
 
 _allowed = (
     "abcdefghijklmnopqrstuvwxyz"
@@ -238,6 +238,8 @@ class Search(Screen):
                     pair = DOWNLOADED
                 if result.data in self.app.props["selected"]:
                     pair = SELECTED
+                if result.data == self.app.props["playing"]["song"]:
+                    pair = PLAYING
 
                 cursor = (
                     " "

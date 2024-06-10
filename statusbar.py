@@ -92,7 +92,7 @@ class StatusBar:
         )
 
         # Other player stuff
-        # Left side: rewind, prev and shuffle
+        # Left side: rewind, prev
         stdscr.addstr(
             height - 2,
             1,
@@ -106,15 +106,7 @@ class StatusBar:
             color_pair(BUTTON),
         )
 
-        pair = [DISABLED, ENABLED][self.app.props["playing"]["status"]["shuffle"]]
-        stdscr.addstr(
-            height - 2,
-            7,
-            SHUFFLE,
-            color_pair(pair),
-        )
-
-        # Right side: loop, ff, next
+        # Right side: ff, next
         stdscr.addstr(
             height - 2,
             width - 2,
@@ -128,11 +120,29 @@ class StatusBar:
             color_pair(BUTTON),
         )
 
-        pair = [DISABLED, ENABLED][self.app.props["playing"]["status"]["loop"]]
+        pair = [DISABLED, ENABLED][self.app.props["playing"]["status"]["shuffle"]]
         stdscr.addstr(
             height - 2,
-            width - 8,
-            LOOP,
+            width // 2 - 4,
+            SHUFFLE,
+            color_pair(pair),
+        )
+
+        stdscr.addstr(
+            height - 2,
+            width // 2,
+            STOP,
+            color_pair(BUTTON),
+        )
+
+        pair = [DISABLED, ENABLED][self.app.props["playing"]["status"]["loop"]]
+        loop_suffix = (
+            " *" if self.app.props["playing"]["status"]["loop_type"] == "all" else " 1"
+        )
+        stdscr.addstr(
+            height - 2,
+            width // 2 + 3,
+            LOOP + loop_suffix,
             color_pair(pair),
         )
 
