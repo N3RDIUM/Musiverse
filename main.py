@@ -55,7 +55,10 @@ def main(stdscr) -> None:
                 reload_theme()
 
             try:
-                statusbar.render(stdscr, frame, frame_rate)
+                try:
+                    statusbar.render(stdscr, frame, frame_rate)
+                except curses_error:  # TODO! Find out why
+                    pass
                 app.render(stdscr, frame, frame_rate)
             except UnboundLocalError:
                 pass
