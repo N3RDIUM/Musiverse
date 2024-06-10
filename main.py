@@ -28,19 +28,16 @@ add_screens(app)
 statusbar = StatusBar(app)
 handler = KeyboardHandler(app)
 
+
 # Main loop
-frame = 0
-frame_rate = 60
-
-
 def main(stdscr) -> None:
     """
     # Musiverse
 
     This is the mainloop function called by `wrapper()`
     """
-    global frame
-    global frame_rate
+    frame = 0
+    frame_rate = 60
     curs_set(0)
     start_color()
     reload_theme()
