@@ -1,8 +1,21 @@
 from curses import color_pair, window
 
 from app import App
-from theme import STATUSBAR
+from theme import STATUSBAR, ENABLED, DISABLED, BUTTON
+from do_nothing import do_nothing
 
+# Icons
+PLAY = ""
+PAUSE = ""
+STOP = ""
+NEXT = ""
+PREV = ""
+REW = ""
+FF = ""
+SHUFFLE = ""
+LOOP = ""
+
+# Progress bar stuff
 FILLED = "━"
 EMPTY = " "
 DELIM = "﹝﹞"
@@ -31,28 +44,107 @@ class StatusBar:
         - frame: The current frame number [DEPRECATED]
         - frame_rate: The current frame rate [DEPRECATED]
         """
-        h, w = stdscr.getmaxyx()
+        height, width = stdscr.getmaxyx()
+        do_nothing(frame, frame_rate)
+        # TODO! Add constant vars for all magic numbers
 
         # Render progressbar
+        progress = self.app.props["playing"]["progress"]
         stdscr.addstr(
-            h - 4,
+            height - 4,
             0,
-            f"{DELIM[0]}{FILLED * int(frame % (w - 4))}"
-            + f"{EMPTY * ((w - 4) - int(frame % (w - 4)))}{DELIM[1]}",
+            f"{DELIM[0]}{FILLED * int(progress / 100 * (width - 4))}"
+            + f"{EMPTY * ((width - 4) - int(progress / 100 * (width - 4)))}{DELIM[1]}",
             color_pair(STATUSBAR),
         )
 
-        frm = f"Frame: {frame} ({frame_rate:.2f} fps)  /        "
-        stdscr.addstr(h - 3, 0, frm + " " * (w - len(frm)), color_pair(STATUSBAR))
+        stdscr.addstr(
+            height - 3,
+            0,
+            " " * width,
+            color_pair(STATUSBAR),
+        )
+        stdscr.addstr(
+            height - 2,
+            0,
+            " " * width,
+            color_pair(STATUSBAR),
+        )
 
-        # Empty rows
-        stdscr.addstr(h - 2, 0, " " * w, color_pair(STATUSBAR))
+        # Song name, play/pause
+        song = self.app.props["playing"]["song"]
+        song_name = "Nothing Playing"
+        if song is not None:
+            song_name = song["title"]
+
+        if len(song_name) > width - 8:
+            song_name = song_name[0 : width - 8] + ""
+
+        playpause_icon = PAUSE
+        if self.app.props["playing"]["status"]["playing"]:
+            playpause_icon = PLAY
+
+        stdscr.addstr(
+            height - 3,
+            int((width - len(song_name)) / 2),
+            f"{playpause_icon} {song_name}",
+            color_pair(STATUSBAR),
+        )
+
+        # Other player stuff
+        # Left side: rewind, prev and shuffle
+        stdscr.addstr(
+            height - 2,
+            1,
+            PREV,
+            color_pair(BUTTON),
+        )
+        stdscr.addstr(
+            height - 2,
+            4,
+            REW,
+            color_pair(BUTTON),
+        )
+
+        pair = [DISABLED, ENABLED][self.app.props["playing"]["status"]["shuffle"]]
+        stdscr.addstr(
+            height - 2,
+            7,
+            SHUFFLE,
+            color_pair(pair),
+        )
+
+        # Right side: loop, ff, next
+        stdscr.addstr(
+            height - 2,
+            width - 2,
+            NEXT,
+            color_pair(BUTTON),
+        )
+        stdscr.addstr(
+            height - 2,
+            width - 5,
+            FF,
+            color_pair(BUTTON),
+        )
+
+        pair = [DISABLED, ENABLED][self.app.props["playing"]["status"]["loop"]]
+        stdscr.addstr(
+            height - 2,
+            width - 8,
+            LOOP,
+            color_pair(pair),
+        )
 
         # Render active keybinds
         kb = self.app.props["keybinds"]
         lt = self.app.props["status_text"]
-        if len(lt) > w - len(kb) - 4:
-            lt = lt[0 : w - len(kb) - 4] + "..."
+        if len(lt) > width - len(kb) - 4:
+            lt = lt[0 : width - len(kb) - 4] + "..."
+
         stdscr.addstr(
-            h - 1, 0, lt + " " * (w - len(kb) - len(lt) - 1) + kb, color_pair(STATUSBAR)
+            height - 1,
+            0,
+            lt + " " * (width - len(kb) - len(lt)) + kb,
+            color_pair(STATUSBAR),
         )

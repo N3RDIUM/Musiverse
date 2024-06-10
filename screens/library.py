@@ -387,7 +387,7 @@ class Library(Screen):
             elif ch == ESC:
                 self.terminate_search()
                 self.app.props["keylock"] = False
-                self.app.navigate(self.app.props["last_screen"])
+                self.app.navigate("home")
                 self.cursor_position = 0
 
             # Cursor movement logic
@@ -415,7 +415,7 @@ class Library(Screen):
             # Esc to go back to playlist search
             if ch == ESC:
                 self.app.props["keylock"] = True
-                self.app.props["keybinds"] = "[󱊷] Back [󰌑] Open"
+                self.app.props["keybinds"] = "[󱊷] Back [󰌑] Open [tab] Create playlist"
                 self.app.props["library_status"] = LIBRARY_MODES["search"]
                 self.selected = 0
                 self.vertical_position = 0
@@ -452,6 +452,6 @@ class Library(Screen):
         Called by app.App when the user navigates to this screen
         """
         self.app.props["keylock"] = True
-        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Open"
+        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Open [tab] Create playlist"
         self.app.props["library_status"] = LIBRARY_MODES["search"]
         self.start_search()

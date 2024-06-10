@@ -15,6 +15,10 @@ DOWNLOADINGFG = 7
 DOWNLOADEDFG = 8
 DOWNLOADEDBG = 9
 SELECTFG = 10
+ENABLEDFG = 11
+DISABLEDFG = 12
+BUTTONFG = 13
+BUTTONBG = 14
 
 # Pairs
 DEFAULT = 1
@@ -24,6 +28,9 @@ SELECT = 4
 DOWNLOADING = 5
 DOWNLOADED = 6
 SELECTED = 7
+ENABLED = 8
+DISABLED = 9
+BUTTON = 10
 
 
 # Function to process color
@@ -57,6 +64,10 @@ def reload_theme() -> None:
     init_color(DOWNLOADEDFG, *process_color(theme["downloaded_foreground"]))
     init_color(DOWNLOADEDBG, *process_color(theme["downloaded_background"]))
     init_color(SELECTFG, *process_color(theme["selected_foreground"]))
+    init_color(ENABLEDFG, *process_color(theme["enabled"]))
+    init_color(DISABLEDFG, *process_color(theme["disabled"]))
+    init_color(BUTTONFG, *process_color(theme["button_foreground"]))
+    init_color(BUTTONBG, *process_color(theme["button_background"]))
 
     init_pair(DEFAULT, FOREGROUND, BACKGROUND)
     init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
@@ -66,3 +77,6 @@ def reload_theme() -> None:
     init_pair(DOWNLOADING, DOWNLOADINGFG, SELECTBG)
     init_pair(DOWNLOADED, DOWNLOADEDFG, DOWNLOADEDBG)
     init_pair(SELECTED, SELECTFG, SELECTBG)
+    init_pair(ENABLED, ENABLEDFG, STATUSBARBG)
+    init_pair(DISABLED, DISABLEDFG, STATUSBARBG)
+    init_pair(BUTTON, BUTTONFG, BUTTONBG)

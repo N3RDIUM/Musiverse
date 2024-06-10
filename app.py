@@ -22,6 +22,16 @@ class App:
             "status_text": "",
             "queue": [],
             "selected": [],
+            "playing": {
+                "status": {
+                    "playing": False,
+                    "loop": False,
+                    "loop_type": "all",  # or single
+                    "shuffle": False,
+                },
+                "song": None,
+                "progress": 42,
+            },
         }
         self.storage = Storage(self)
 

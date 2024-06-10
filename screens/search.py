@@ -302,7 +302,7 @@ class Search(Screen):
         elif ch == ESC:
             self.terminate_search()
             self.app.props["keylock"] = False
-            self.app.navigate(self.app.props["last_screen"])
+            self.app.navigate("home")
             self.cursor_position = 0
 
         # Cursor movement logic
