@@ -56,6 +56,10 @@ class Player(Screen):
     def update_player(self) -> None:
         while True:
             try:
+                if self.app.props["playing"]["song"] is None:
+                    self.no_song()
+                    raise Exception  # Jump to the sleeping part
+
                 if str(self.player_status["song"]) != str(
                     self.app.props["playing"]["song"]
                 ):
@@ -151,10 +155,12 @@ class Player(Screen):
                 self.app.props["status_text"] = "No song playing!"
                 self.no_song()
 
-        if ch == KEY_LEFT:  # TODO! Add interval to config.json
+        if ch == KEY_LEFT:
             try:
                 pygame.mixer.music.rewind()
-                current = pygame.mixer.music.get_pos() - self.offset
+                current = (
+                    pygame.mixer.music.get_pos() - self.offset - config["seek_interval"]
+                )
                 pygame.mixer.music.set_pos(current / 1000)
                 self.offset += 1000
             except pygame.error:
@@ -163,7 +169,9 @@ class Player(Screen):
         elif ch == KEY_RIGHT:
             try:
                 pygame.mixer.music.rewind()
-                current = pygame.mixer.music.get_pos() - self.offset
+                current = (
+                    pygame.mixer.music.get_pos() - self.offset - config["seek_interval"]
+                )
                 pygame.mixer.music.set_pos(current / 1000)
                 self.offset -= 1000
             except pygame.error:
@@ -176,6 +184,8 @@ class Player(Screen):
 
         Called when no song is playing
         """
+        pygame.mixer.music.set_endevent(0)
+        pygame.mixer.music.stop()
         self.app.props["playing"]["status"]["playing"] = False
         self.app.props["playing"]["song"] = None
         self.app.props["playing"]["progress"] = 0
