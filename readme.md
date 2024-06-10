@@ -7,7 +7,6 @@ Musiverse is a curses-based modern, minimal, fully customizable and hackable ter
 - [x] Search for music on YouTube
 - [x] Download music from YouTube
 - [x] Parallely download multiple songs
-
 - [ ] Create and manage playlists
 - [ ] Play music
 - [ ] Visualize music
@@ -16,7 +15,6 @@ Musiverse is a curses-based modern, minimal, fully customizable and hackable ter
 ## Roadmap
 
 - [x] Search and download util
-
 - [ ] Player
 - [ ] Mpris integration
 - [ ] Visualizer (w/ cover art display in visualizer and player screens)
@@ -25,7 +23,6 @@ Musiverse is a curses-based modern, minimal, fully customizable and hackable ter
 ## Short-term TODO
 
 - [x] Space to select songs globally for addition to a playlist (globally = in any screen showing songs)
-
 - [ ] Search for songs within a playlist
 - [ ] Add a playlist to another playlist
 - [ ] Create the player thing
