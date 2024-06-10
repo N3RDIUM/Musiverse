@@ -14,14 +14,16 @@ SELECTBG = 6
 DOWNLOADINGFG = 7
 DOWNLOADEDFG = 8
 DOWNLOADEDBG = 9
+SELECTFG = 10
 
 # Pairs
 DEFAULT = 1
 STATUSBAR = 2
 CURSOR = 3
-SELECTED = 4
+SELECT = 4
 DOWNLOADING = 5
 DOWNLOADED = 6
+SELECTED = 7
 
 
 # Function to process color
@@ -54,11 +56,13 @@ def reload_theme() -> None:
     init_color(DOWNLOADINGFG, *process_color(theme["downloading_foreground"]))
     init_color(DOWNLOADEDFG, *process_color(theme["downloaded_foreground"]))
     init_color(DOWNLOADEDBG, *process_color(theme["downloaded_background"]))
+    init_color(SELECTFG, *process_color(theme["selected_foreground"]))
 
     init_pair(DEFAULT, FOREGROUND, BACKGROUND)
     init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
     init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
     init_pair(CURSOR, CURSORCOL, BACKGROUND)
-    init_pair(SELECTED, FOREGROUND, SELECTBG)
+    init_pair(SELECT, FOREGROUND, SELECTBG)
     init_pair(DOWNLOADING, DOWNLOADINGFG, SELECTBG)
     init_pair(DOWNLOADED, DOWNLOADEDFG, DOWNLOADEDBG)
+    init_pair(SELECTED, SELECTFG, SELECTBG)

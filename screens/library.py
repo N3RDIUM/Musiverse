@@ -19,7 +19,7 @@ from config import config
 from do_nothing import do_nothing
 from screen import Screen
 from song import Song
-from theme import CURSOR, DEFAULT, SELECTED
+from theme import CURSOR, DEFAULT, SELECT, SELECTED
 
 # List of allowed characters in the search
 _allowed = (
@@ -228,10 +228,15 @@ class Library(Screen):
 
                     # Render the result and add its string to the stdscr
                     rendered = result.render(width - 3)
-                    pair = SELECTED if i == self.selected else DEFAULT
+                    pair = (
+                        SELECT
+                        if i == self.selected + self.vertical_position
+                        else DEFAULT
+                    )
+
                     cursor = (
                         " "
-                        if i != self.selected
+                        if i != self.selected + self.vertical_position
                         else (
                             "" if time() % config["cursor_blink_rate"] < 0.5 else " "
                         )
@@ -312,10 +317,17 @@ class Library(Screen):
 
                     # Render the result and add its string to the stdscr
                     rendered = song.render(width - 3)
-                    pair = SELECTED if i == self.selected else DEFAULT
+                    pair = (
+                        SELECT
+                        if i == self.selected + self.vertical_position
+                        else DEFAULT
+                    )
+                    if song.data in self.app.props["selected"]:
+                        pair = SELECTED
+
                     cursor = (
                         " "
-                        if i != self.selected
+                        if i != self.selected + self.vertical_position
                         else (
                             "" if time() % config["cursor_blink_rate"] < 0.5 else " "
                         )
@@ -395,7 +407,7 @@ class Library(Screen):
                 self.app.props["keylock"] = False
                 self.app.props["playlist"] = filename
                 self.app.props["library_status"] = LIBRARY_MODES["playlist"]
-                self.app.props["keybinds"] = "[󱊷] Back [space] Play"
+                self.app.props["keybinds"] = "[󱊷] Back [space] Play [tab] Select"
                 self.selected = 0
                 self.vertical_position = 0
 
@@ -415,6 +427,22 @@ class Library(Screen):
             # Enter to start playing
             elif ch == KEY_ENTER:
                 pass
+            # Selection logic
+            elif ch == ord("\t"):
+                try:
+                    playlist = self.app.props["playlist"]
+                    with open(playlist) as f:
+                        playlist = load(f)
+
+                    result = Song(
+                        playlist["songs"][self.selected + self.vertical_position]
+                    )
+                    if result.data not in self.app.props["selected"]:
+                        self.app.props["selected"].append(result.data)
+                    else:
+                        self.app.props["selected"].remove(result.data)
+                except Exception as e:
+                    print(f"Could not select: {e}")
         return True
 
     def on_navigate(self) -> None:

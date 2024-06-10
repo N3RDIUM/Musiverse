@@ -22,7 +22,9 @@ Musiverse is a curses-based modern, minimal, fully customizable and hackable ter
 
 ## Short-term TODO
 
-- [ ] Space to select songs globally for addition to a playlist (globally = in any screen showing songs) [WIP]
+- [x] Space to select songs globally for addition to a playlist (globally = in any screen showing songs) [WIP]
+
+- [ ] Search for songs within a playlist
 - [ ] Add a playlist to another playlist
 - [ ] Create the player thing
 - [ ] Add mpris integration

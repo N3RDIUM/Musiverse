@@ -17,7 +17,7 @@ from do_nothing import do_nothing
 from screen import Screen
 from storage import Storage
 from json import load
-from theme import CURSOR, DEFAULT, DOWNLOADED, DOWNLOADING, SELECTED
+from theme import CURSOR, DEFAULT, DOWNLOADED, DOWNLOADING, SELECT, SELECTED
 
 _allowed = (
     "abcdefghijklmnopqrstuvwxyz"
@@ -231,11 +231,14 @@ class Search(Screen):
 
                 # Render the result and add its string to the stdscr
                 rendered = result.render(w - 3)
-                pair = SELECTED if i == self.selected else DEFAULT
+                pair = SELECT if i == self.selected else DEFAULT
                 if result.data in self.app.props["queue"]:
                     pair = DOWNLOADING
                 if Storage.exists(result.data["id"]):
                     pair = DOWNLOADED
+                if result.data in self.app.props["selected"]:
+                    pair = SELECTED
+
                 cursor = (
                     " "
                     if i != self.selected
@@ -324,6 +327,17 @@ class Search(Screen):
                     self.namespace.results[self.selected].data
                 )
 
+        # Selection logic
+        elif ch == ord("\t"):
+            if self.namespace.results[self.selected].data in self.app.props["queue"]:
+                self.app.props["queue"].remove(
+                    self.namespace.results[self.selected].data
+                )
+            else:
+                self.app.props["selected"].append(
+                    self.namespace.results[self.selected].data
+                )
+
     def on_navigate(self) -> None:
         """
         ## On navigate
@@ -331,5 +345,5 @@ class Search(Screen):
         Called by app.App when the user navigates to this screen
         """
         self.app.props["keylock"] = True
-        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Download"
+        self.app.props["keybinds"] = "[󱊷] Back [󰌑] Download [tab] Select"
         self.start_search()

@@ -33,7 +33,7 @@ class KeyboardHandler:
             newch = stdscr.getch()
             if newch == -1:
                 ch = ESC
-        elif ch == KEY_ENTER or ch == 10 or ch == 13:
+        elif ch in (KEY_ENTER, 10, 13):
             ch = KEY_ENTER
 
         # Try to tell the current screen about the key

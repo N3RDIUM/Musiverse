@@ -21,6 +21,7 @@ class App:
             "keylock": False,
             "status_text": "",
             "queue": [],
+            "selected": [],
         }
         self.storage = Storage(self)
 
