@@ -22,11 +22,12 @@ class App:
             "status_text": "",
             "queue": [],
             "selected": [],
+            "playlist": None,
             "playing": {
                 "status": {
                     "playing": False,
                     "loop": False,
-                    "loop_type": "all",  # or single
+                    "loop_type": "single",  # or all
                     "shuffle": False,
                 },
                 "song": None,

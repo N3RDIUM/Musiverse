@@ -19,7 +19,7 @@ from config import config
 from do_nothing import do_nothing
 from screen import Screen
 from song import Song
-from theme import CURSOR, DEFAULT, SELECT, SELECTED
+from theme import CURSOR, DEFAULT, SELECT, SELECTED, PLAYING
 
 # List of allowed characters in the search
 _allowed = (
@@ -145,8 +145,8 @@ class Library(Screen):
 
                 # Transfer the results to the main process
                 namespace.results = results
-            except Exception as e:
-                print(e)
+            except Exception:
+                pass
 
             # Sleep for some time between each iteration
             # This is done so that you don't fry your computer.
@@ -324,6 +324,8 @@ class Library(Screen):
                     )
                     if song.data in self.app.props["selected"]:
                         pair = SELECTED
+                    if song.data == self.app.props["playing"]["song"]:
+                        pair = PLAYING
 
                     cursor = (
                         " "
@@ -426,7 +428,13 @@ class Library(Screen):
                 self.selected += 1
             # Enter to start playing
             elif ch == KEY_ENTER:
-                pass
+                playlist = self.app.props["playlist"]
+                with open(playlist) as f:
+                    playlist = load(f)
+
+                result = Song(playlist["songs"][self.selected + self.vertical_position])
+                self.app.props["playing"]["song"] = result.data
+                self.app.props["playing"]["status"]["playing"] = True
             # Selection logic
             elif ch == ord("\t"):
                 try:

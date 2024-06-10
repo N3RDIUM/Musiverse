@@ -19,6 +19,7 @@ ENABLEDFG = 11
 DISABLEDFG = 12
 BUTTONFG = 13
 BUTTONBG = 14
+PLAYINGFG = 15
 
 # Pairs
 DEFAULT = 1
@@ -31,6 +32,7 @@ SELECTED = 7
 ENABLED = 8
 DISABLED = 9
 BUTTON = 10
+PLAYING = 11
 
 
 # Function to process color
@@ -68,6 +70,7 @@ def reload_theme() -> None:
     init_color(DISABLEDFG, *process_color(theme["disabled"]))
     init_color(BUTTONFG, *process_color(theme["button_foreground"]))
     init_color(BUTTONBG, *process_color(theme["button_background"]))
+    init_color(PLAYINGFG, *process_color(theme["playing_foreground"]))
 
     init_pair(DEFAULT, FOREGROUND, BACKGROUND)
     init_pair(STATUSBAR, STATUSBARFG, STATUSBARBG)
@@ -80,3 +83,4 @@ def reload_theme() -> None:
     init_pair(ENABLED, ENABLEDFG, STATUSBARBG)
     init_pair(DISABLED, DISABLEDFG, STATUSBARBG)
     init_pair(BUTTON, BUTTONFG, BUTTONBG)
+    init_pair(PLAYING, PLAYINGFG, BACKGROUND)

@@ -5,6 +5,7 @@
     "disabled": "#4c566a",
     "background": "#3b4252",
     "selected_foreground": "#81a1c1",
+    "playing_foreground": "#b48ead",
     "select_background": "#4c566a",
     "statusbar_foreground": "#ddddea",
     "statusbar_background": "#2e3440",

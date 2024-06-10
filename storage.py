@@ -142,8 +142,8 @@ class Storage:
 
                     # TODO! Add timeout here
                     break
-            except Exception as e:
-                print(e)
+            except Exception:
+                pass
 
     def kill(self) -> None:
         """
