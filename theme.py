@@ -36,8 +36,8 @@ PLAYING = 11
 
 
 # Function to process color
-def process_color(color: str) -> Tuple[int, int, int]:
-    color = int(color.strip("#"), 16)
+def process_color(color_str: str) -> Tuple[int, int, int]:
+    color = int(color_str.strip("#"), 16)
     color = (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF
     return (
         int(color[0] / 256 * 1000),
@@ -84,3 +84,4 @@ def reload_theme() -> None:
     init_pair(DISABLED, DISABLEDFG, STATUSBARBG)
     init_pair(BUTTON, BUTTONFG, BUTTONBG)
     init_pair(PLAYING, PLAYINGFG, BACKGROUND)
+

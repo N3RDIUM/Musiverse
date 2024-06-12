@@ -4,6 +4,8 @@ from sys import exit as sys_exit
 
 from app import App
 
+LOOP_MODES = ["single", "all"]
+
 
 class KeyboardHandler:
     def __init__(self, app: App) -> None:
@@ -67,6 +69,19 @@ class KeyboardHandler:
             self.app.navigate("library")
         if ch == ord("p") or ch == ord("P"):
             self.app.navigate("player")
+        if ch == ord("r") or ch == ord("R"):
+            self.app.props["playing"]["status"]["loop"] = not self.app.props["playing"][
+                "status"
+            ]["loop"]
+        if ch == ord("e") or ch == ord("E"):
+            current = self.app.props["playing"]["status"]["loop_type"]
+            self.app.props["playing"]["status"]["loop_type"] = LOOP_MODES[
+                (LOOP_MODES.index(current) + 1) % len(LOOP_MODES)
+            ]
+        if ch == ord("w") or ch == ord("W"):
+            self.app.props["playing"]["status"]["shuffle"] = not self.app.props[
+                "playing"
+            ]["status"]["shuffle"]
         if ch == ord("q") or ch == ord("Q"):
             self.app.on_kill()
             # skipcq: PYL-R1722

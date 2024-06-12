@@ -26,9 +26,9 @@ class App:
             "playing": {
                 "status": {
                     "playing": False,
-                    "loop": False,
-                    "loop_type": "single",  # or all
-                    "shuffle": False,
+                    "loop": True,
+                    "loop_type": "all",
+                    "shuffle": True,
                 },
                 "song": None,
                 "progress": 0,

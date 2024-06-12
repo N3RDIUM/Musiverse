@@ -7,6 +7,7 @@
     "search_interval": 0.42,
     "library_search_interval": 0.01,
     "progress_update_interval": 0.1,
+	"download_thread_interval": 0.24,
     "seek_interval": 5000,
     "download_dir": "./downloads",
     "index_dir": "./downloads/index/",
