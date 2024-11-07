@@ -1,8 +1,8 @@
 from curses import color_pair, window
 
 from app import App
-from theme import STATUSBAR, ENABLED, DISABLED, BUTTON
 from do_nothing import do_nothing
+from theme import BUTTON, DISABLED, ENABLED, STATUSBAR
 
 # Icons
 PLAY = ""

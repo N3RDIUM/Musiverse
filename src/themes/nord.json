@@ -1,0 +1,17 @@
+{
+  "foreground": "#eeeeff",
+  "enabled": "#81a1c1",
+  "disabled": "#4c566a",
+  "background": "#3b4252",
+  "selected_foreground": " #81a1c1",
+  "playing_foreground": "#b48ead",
+  "select_background": "#4c566a",
+  "statusbar_foreground": "#ddddea",
+  "statusbar_background": "#2e3440",
+  "cursor": "#d8dee9",
+  "downloading_foreground": "#ebcb8b",
+  "downloaded_foreground": "#a3be8c",
+  "downloaded_background": "#434c5e",
+  "button_foreground": "#d8dee9",
+  "button_background": "#3b4252"
+}

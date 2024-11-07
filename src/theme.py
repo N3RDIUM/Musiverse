@@ -84,4 +84,3 @@ def reload_theme() -> None:
     init_pair(DISABLED, DISABLEDFG, STATUSBARBG)
     init_pair(BUTTON, BUTTONFG, BUTTONBG)
     init_pair(PLAYING, PLAYINGFG, BACKGROUND)
-

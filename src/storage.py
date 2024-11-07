@@ -5,6 +5,7 @@ from os.path import exists, join
 from config import config
 from do_nothing import do_nothing
 
+
 class loggerOutputs:  # Shush, yt-dlp!
     def error(*args, **kwargs):
         do_nothing(args, kwargs)
@@ -63,7 +64,6 @@ class Storage:
             - The path to the downloaded file
             """
             import yt_dlp as youtube_dl
-            from time import sleep
 
             yt_url = f"https://www.youtube.com/watch?v={id}"
             ydl_opts = {
@@ -141,7 +141,7 @@ class Storage:
                     thread.daemon = False
                     thread.start()
 
-                    sleep(config['download_thread_interval'])
+                    sleep(config["download_thread_interval"])
                     break
             except Exception:
                 pass

@@ -4,19 +4,20 @@ from curses import (
     nocbreak,
     start_color,
     wrapper,
+)
+from curses import (
     error as curses_error,
 )
+from os import makedirs
 from time import perf_counter, sleep
+
+from screens import add_screens
 
 from app import App
 from config import config
 from keyboard_handler import KeyboardHandler
-from screens import add_screens
 from statusbar import StatusBar
 from theme import reload_theme
-
-# Make these dirs if they don't exist
-from os import makedirs
 
 makedirs(config["download_dir"], exist_ok=True)
 makedirs(config["index_dir"], exist_ok=True)
