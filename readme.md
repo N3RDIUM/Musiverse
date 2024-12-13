@@ -9,9 +9,9 @@ Feel free to fork and contribute!
 
 ## Capabilities
 
-- [x] Search for music on YouTube
-- [x] Download music from YouTube
-- [x] Parallely download multiple songs
+- [ ] Search for music on YouTube
+- [ ] Download music from YouTube
+- [ ] Parallely download multiple songs
 - [ ] Create and manage playlists
 - [ ] Play music
 - [ ] Visualize music
@@ -19,7 +19,7 @@ Feel free to fork and contribute!
 
 ## Roadmap
 
-- [x] Search and download util
+- [ ] Search and download util
 - [ ] Player
 - [ ] Mpris integration
 - [ ] Visualizer (w/ cover art display in visualizer and player screens)
@@ -27,10 +27,4 @@ Feel free to fork and contribute!
 
 ## Short-term TODO
 
-- [ ] (IMPORTANT) Improve the renderer, build a string and do it all in one drawcall.
-- [x] Space to select songs globally for addition to a playlist (globally = in any screen showing songs)
-- [ ] Search for songs within a playlist
-- [ ] Add a playlist to another playlist
-- [ ] Create the player thing
-- [ ] Add mpris integration
-- [ ] Create a "queue" buffer for songs to be played. Instead of directly playing a playlist, you can "enqueue" it. The queue can be edited like a playlist. Create another mode in the library screen for this.
+- [ ] Make the UI renderer
