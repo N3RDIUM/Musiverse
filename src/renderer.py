@@ -1,4 +1,4 @@
-from curses import cbreak, curs_set, nocbreak, start_color
+from curses import cbreak, curs_set, endwin, nocbreak, noecho, start_color
 
 BLANK = "+"
 
@@ -40,19 +40,18 @@ class Renderer:
         self.string.update(stdscr)
 
         for hook in self.pre_drawcall_hooks:
-            hook()
+            hook()  # TODO: Type check
 
         if not self.string.changed:
             return
 
-        cbreak()
         stdscr.nodelay(True)
 
         for i in range(len(self.string.strings)):
             string = self.string.strings[i]
 
             if i == len(self.string.strings) - 1:
-                string = string[:-1]
+                string = string[:-1]  # What?!
 
             stdscr.addstr(i, 0, string)
 
@@ -60,13 +59,16 @@ class Renderer:
         stdscr.refresh()
 
         for hook in self.post_drawcall_hooks:
-            hook()
+            hook()  # TODO: Type check
 
         self.string.swap()
         self.string.clear()
 
     def mainloop(self, stdscr):
         curs_set(0)
+        noecho()
+        cbreak()
+
         if False:
             start_color()
         self.inloop = True
@@ -74,7 +76,8 @@ class Renderer:
         while self.inloop:
             try:
                 self.drawcall(stdscr)
-            except KeyboardInterrupt:
+            except Exception:
                 break
 
         nocbreak()
+        endwin()
