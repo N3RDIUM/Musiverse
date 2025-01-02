@@ -27,4 +27,6 @@ Feel free to fork and contribute!
 
 ## Short-term TODO
 
-- [ ] Make the UI renderer
+- [x] Make the UI renderer
+- [ ] Make the actual UI
+

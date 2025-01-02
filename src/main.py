@@ -1,7 +1,5 @@
 from curses import wrapper
+from app import App
 
-from renderer import Renderer
-
-renderer = Renderer()
-
-wrapper(renderer.mainloop)
+app = App()
+wrapper(app.wrapper)
